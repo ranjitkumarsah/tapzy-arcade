@@ -16,6 +16,7 @@ import {
 import { useTelegramAuth } from '../telegram/useTelegramAuth'
 import { initMonetag, showInterstitial } from '../ads/monetag'
 import { watchWallet } from '../economy/wallet'
+import { watchEntitlements } from '../economy/stars'
 
 // Ad pacing rules (PRD): interstitial at most every Nth game, and never more
 // than once per few minutes.
@@ -42,7 +43,9 @@ export function AppProvider({ children }) {
   // whether an ad actually shows.
   const gamesEndedRef = useRef(0)
   const lastAdAtRef = useRef(0)
+  const noAdsRef = useRef(false) // "Remove Ads" entitlement
   const maybeShowInterstitial = useCallback(async () => {
+    if (noAdsRef.current) return
     gamesEndedRef.current += 1
     const now = Date.now()
     const dueByCount = gamesEndedRef.current % INTERSTITIAL_EVERY === 0
@@ -54,8 +57,9 @@ export function AppProvider({ children }) {
   }, [])
 
   // Ad shown when a game is opened. Guarded so it can't double-fire if the
-  // player quickly re-enters a game.
+  // player quickly re-enters a game. Suppressed for Remove-Ads buyers.
   const showGameOpenAd = useCallback(async () => {
+    if (noAdsRef.current) return
     const now = Date.now()
     if (now - lastAdAtRef.current < 30 * 1000) return
     lastAdAtRef.current = now
@@ -77,13 +81,23 @@ export function AppProvider({ children }) {
   // Declared AFTER useTelegramAuth so firebaseUser is initialized.
   const uid = firebaseUser?.uid ?? null
   const [wallet, setWallet] = useState({ earnedCoins: 0, bonusCoins: 0, total: 0 })
+  const [entitlements, setEntitlements] = useState({ noAds: false, themes: [] })
   useEffect(() => {
     if (!uid) {
       setWallet({ earnedCoins: 0, bonusCoins: 0, total: 0 })
+      setEntitlements({ noAds: false, themes: [] })
+      noAdsRef.current = false
       return
     }
-    const unsub = watchWallet(uid, setWallet)
-    return unsub
+    const unsubW = watchWallet(uid, setWallet)
+    const unsubE = watchEntitlements(uid, (e) => {
+      setEntitlements(e)
+      noAdsRef.current = e.noAds
+    })
+    return () => {
+      unsubW()
+      unsubE()
+    }
   }, [uid])
 
   const value = useMemo(
@@ -97,6 +111,7 @@ export function AppProvider({ children }) {
       authErrorDetail,
       uid,
       wallet,
+      entitlements,
       maybeShowInterstitial,
       showGameOpenAd,
     }),
@@ -109,6 +124,7 @@ export function AppProvider({ children }) {
       authErrorDetail,
       uid,
       wallet,
+      entitlements,
       maybeShowInterstitial,
       showGameOpenAd,
     ],

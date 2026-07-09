@@ -9,6 +9,7 @@ import WalletModal from './WalletModal'
 import DailyModal from './DailyModal'
 import InviteModal from './InviteModal'
 import ProfileModal from './ProfileModal'
+import StoreModal from './StoreModal'
 import { getDailyStatus } from '../economy/daily'
 import { syncReferral } from '../economy/referral'
 
@@ -21,6 +22,7 @@ export default function Launcher({ onSelect, onOpenLeaderboard }) {
   const [daily, setDaily] = useState({ claimable: false, streak: 0 })
   const [inviteOpen, setInviteOpen] = useState(false)
   const [profileOpen, setProfileOpen] = useState(false)
+  const [storeOpen, setStoreOpen] = useState(false)
 
   const displayName = telegramUser?.first_name || 'Player'
 
@@ -134,6 +136,15 @@ export default function Launcher({ onSelect, onOpenLeaderboard }) {
         >
           🤝 Invite & earn
         </button>
+        <button
+          className="btn btn-secondary"
+          onClick={() => {
+            hapticImpact('light')
+            setStoreOpen(true)
+          }}
+        >
+          🛍️ Store
+        </button>
       </div>
 
       <p className="launcher-footer">More games coming soon 🎮</p>
@@ -151,6 +162,7 @@ export default function Launcher({ onSelect, onOpenLeaderboard }) {
       ) : null}
       {inviteOpen ? <InviteModal onClose={() => setInviteOpen(false)} /> : null}
       {profileOpen ? <ProfileModal onClose={() => setProfileOpen(false)} /> : null}
+      {storeOpen ? <StoreModal onClose={() => setStoreOpen(false)} /> : null}
     </div>
   )
 }

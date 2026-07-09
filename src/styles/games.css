@@ -302,6 +302,50 @@
   color: var(--hint);
 }
 
+/* ---- Store ---- */
+.store-modal {
+  max-width: 360px;
+  text-align: left;
+}
+.store-modal h2 {
+  text-align: center;
+}
+.store-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.store-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background: var(--card);
+  border-radius: 12px;
+  padding: 10px 12px;
+}
+.store-icon {
+  font-size: 1.6rem;
+}
+.store-info {
+  flex: 1;
+}
+.store-title {
+  font-weight: 700;
+}
+.store-desc {
+  font-size: 0.75rem;
+  color: var(--hint);
+}
+.store-btn {
+  padding: 8px 12px;
+  white-space: nowrap;
+}
+.store-owned {
+  color: #3aa76d;
+  font-weight: 700;
+  font-size: 0.85rem;
+}
+
 /* ---- Invite ---- */
 .invite-modal {
   text-align: center;

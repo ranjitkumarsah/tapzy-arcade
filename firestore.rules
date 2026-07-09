@@ -54,5 +54,16 @@ service cloud.firestore {
                       || resource.data.referredBy == request.auth.uid);
       allow write: if false;
     }
+
+    // Profiles (entitlements from Stars purchases) — owner reads; server writes.
+    match /profiles/{uid} {
+      allow read: if request.auth != null && request.auth.uid == uid;
+      allow write: if false;
+    }
+
+    // Purchase idempotency markers — fully private (server only).
+    match /purchases/{chargeId} {
+      allow read, write: if false;
+    }
   }
 }

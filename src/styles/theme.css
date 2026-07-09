@@ -17,6 +17,13 @@
   --danger: #ec3942;
 }
 
+/* Premium unlockable theme (bought with Stars). Overrides the accent. */
+:root[data-premium='neon'] {
+  --accent: #00e5ff;
+  --link: #00e5ff;
+  --accent-text: #05231f;
+}
+
 /* Optional light-scheme fallback if Telegram reports light but omits colors. */
 :root[data-theme='light'] {
   --bg: #ffffff;
