@@ -20,6 +20,17 @@ const pick = (...vals) => vals.find((v) => v != null && v !== '')
 export default async function handler(req, res) {
   const q = { ...req.query, ...(typeof req.body === 'object' ? req.body : {}) }
 
+  // Log every hit so you can confirm (in Vercel → Functions logs) whether
+  // Monetag actually calls the postback, and with which params.
+  console.log('adReward hit:', {
+    method: req.method,
+    keys: Object.keys(q),
+    uid: q.uid ?? q.ymid ?? q.user_id ?? null,
+    event: q.event_id ?? q.reqid ?? q.transaction_id ?? null,
+    reward: q.reward ?? q.value ?? null,
+    hasSecret: Boolean(q.secret || req.headers['x-postback-secret']),
+  })
+
   // 1) verify shared secret
   const secret = process.env.AD_POSTBACK_SECRET
   const provided = pick(q.secret, req.headers['x-postback-secret'])
@@ -29,9 +40,18 @@ export default async function handler(req, res) {
   }
 
   // 2) extract params (support common alias names across networks)
-  const rawUid = pick(q.uid, q.ymid, q.user_id, q.sub_id, q.subid)
-  const eventId = pick(q.event_id, q.transaction_id, q.click_id, q.reqid, q.requestvar)
-  const reward = Number(pick(q.reward, q.value, q.payout, 0)) || 0
+  const rawUid = pick(q.uid, q.ymid, q.user_id, q.sub_id, q.subid, q.telegram_id)
+  const eventId = pick(
+    q.event_id,
+    q.transaction_id,
+    q.click_id,
+    q.reqid,
+    q.requestvar,
+    q.request_var,
+    q.impression_id,
+    q.var,
+  )
+  const reward = Number(pick(q.reward, q.value, q.payout, q.estimated_price, 0)) || 0
   if (!rawUid || !eventId) {
     res.statusCode = 400
     return res.end('missing_params')
