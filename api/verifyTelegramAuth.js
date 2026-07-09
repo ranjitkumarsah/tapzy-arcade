@@ -29,7 +29,10 @@ function verifyInitData(initData, botToken) {
   const params = new URLSearchParams(initData)
   const providedHash = params.get('hash')
   if (!providedHash) return { ok: false, reason: 'missing_hash' }
+  // Both `hash` and the newer Ed25519 `signature` field must be excluded from
+  // the data-check-string (Telegram computes the HMAC over everything else).
   params.delete('hash')
+  params.delete('signature')
 
   const dataCheckString = [...params.entries()]
     .map(([key, value]) => `${key}=${value}`)
@@ -69,7 +72,8 @@ export default async function handler(req, res) {
   }
 
   try {
-    const botToken = process.env.TELEGRAM_BOT_TOKEN
+    // Trim to survive an accidental trailing space/newline pasted into Vercel.
+    const botToken = process.env.TELEGRAM_BOT_TOKEN?.trim()
     if (!botToken || !process.env.FIREBASE_SERVICE_ACCOUNT) {
       return res.status(500).json({ error: 'server_not_configured' })
     }
