@@ -5,7 +5,7 @@ import { getHighScore } from '../firebase/scores'
 import { hapticImpact } from '../telegram/initTelegram'
 
 // Home screen: header with the player, then a grid of game cards.
-export default function Launcher({ onSelect }) {
+export default function Launcher({ onSelect, onOpenLeaderboard }) {
   const { telegramUser, uid } = useApp()
   const [bests, setBests] = useState({})
 
@@ -58,6 +58,16 @@ export default function Launcher({ onSelect }) {
           </button>
         ))}
       </div>
+
+      <button
+        className="btn btn-secondary lb-open-btn"
+        onClick={() => {
+          hapticImpact('light')
+          onOpenLeaderboard()
+        }}
+      >
+        🏆 Leaderboard
+      </button>
 
       <p className="launcher-footer">More games coming soon 🎮</p>
     </div>

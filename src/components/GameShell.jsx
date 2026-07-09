@@ -2,15 +2,19 @@ import { Suspense, useCallback, useEffect, useState } from 'react'
 import { useApp } from '../context/AppContext'
 import { showBackButton, hapticImpact, setVerticalSwipes } from '../telegram/initTelegram'
 import { saveScore } from '../firebase/scores'
+import { submitLeaderboardScore, getMyRank } from '../firebase/leaderboard'
 import GameOverModal from './GameOverModal'
 
 // Wraps any game with a consistent interface. The game only needs to call
 // onGameOver(score); GameShell saves the score, shows the modal, and handles
 // retry + back-to-menu (including Telegram's native BackButton).
-export default function GameShell({ game, onExit }) {
-  const { uid } = useApp()
+export default function GameShell({ game, onExit, onOpenLeaderboard }) {
+  const { uid, telegramUser } = useApp()
   const [round, setRound] = useState(0) // bump to remount (retry)
-  const [result, setResult] = useState(null) // { score, best, isRecord } | null
+  const [result, setResult] = useState(null) // { score, best, isRecord, rank } | null
+
+  const displayName =
+    telegramUser?.first_name || telegramUser?.username || 'Player'
 
   // Telegram BackButton returns to the launcher.
   useEffect(() => {
@@ -28,9 +32,17 @@ export default function GameShell({ game, onExit }) {
     async (rawScore) => {
       hapticImpact('medium')
       const { best, isRecord } = await saveScore(game.id, rawScore, uid)
-      setResult({ score: Math.round(rawScore) || 0, best, isRecord })
+
+      // Update the public leaderboard only when a personal best is beaten.
+      let rank = null
+      if (uid) {
+        if (isRecord) await submitLeaderboardScore(game.id, best, displayName, uid)
+        rank = await getMyRank(game.id, uid)
+      }
+
+      setResult({ score: Math.round(rawScore) || 0, best, isRecord, rank })
     },
-    [game.id, uid],
+    [game.id, uid, displayName],
   )
 
   const handleRetry = useCallback(() => {
@@ -64,8 +76,12 @@ export default function GameShell({ game, onExit }) {
           score={result.score}
           best={result.best}
           isRecord={result.isRecord}
+          rank={result.rank}
           onRetry={handleRetry}
           onExit={onExit}
+          onLeaderboard={
+            onOpenLeaderboard ? () => onOpenLeaderboard(game.id) : null
+          }
         />
       ) : null}
     </div>
