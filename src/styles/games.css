@@ -246,6 +246,23 @@
   color: var(--hint);
 }
 
+/* ---- Invite ---- */
+.invite-modal {
+  text-align: center;
+}
+.invite-link {
+  background: var(--card);
+  border-radius: 10px;
+  padding: 10px;
+  font-size: 0.8rem;
+  word-break: break-all;
+  color: var(--hint);
+}
+.invite-stats {
+  display: flex;
+  gap: 12px;
+}
+
 /* ---- Buttons ---- */
 .btn {
   border: none;

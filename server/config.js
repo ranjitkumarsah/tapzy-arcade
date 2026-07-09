@@ -14,6 +14,11 @@ export const config = {
   // Max ad-reward credits per user per calendar day (anti-farming).
   dailyAdRewardCap: 50,
 
+  // Referrals (bonus coins). Referrer paid only after the invitee qualifies.
+  referralInviteeBonus: 20, // instant, to the new user
+  referralReferrerReward: 30, // to the referrer, after qualification
+  referralQualifyGames: 3, // invitee must play this many games first
+
   // When true, ad-reward credits are gated by the reward pool balance (real
   // revenue must exist). Keep false during early testing (no revenue yet),
   // switch on (env ECONOMY_POOL_ENFORCED=true) once revenue tracking is wired.

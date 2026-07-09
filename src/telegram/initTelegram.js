@@ -92,6 +92,11 @@ export function getInitData() {
   return isInsideTelegram ? webApp.initData || '' : ''
 }
 
+// The `startapp` parameter (e.g. "ref_<uid>") used for referral deep links.
+export function getStartParam() {
+  return isInsideTelegram ? webApp.initDataUnsafe?.start_param || '' : ''
+}
+
 // Parsed user for immediate UI use only. NEVER trust this for auth — that's what
 // server-side initData verification (Phase 2) is for.
 export function getTelegramUser() {

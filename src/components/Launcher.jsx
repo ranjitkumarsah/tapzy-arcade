@@ -2,12 +2,14 @@ import { useEffect, useState } from 'react'
 import { useApp } from '../context/AppContext'
 import { GAMES } from '../games/registry'
 import { getHighScore } from '../firebase/scores'
-import { hapticImpact, shareApp } from '../telegram/initTelegram'
+import { hapticImpact, shareApp, getStartParam } from '../telegram/initTelegram'
 import SoundToggle from './SoundToggle'
 import CoinChip from './CoinChip'
 import WalletModal from './WalletModal'
 import DailyModal from './DailyModal'
+import InviteModal from './InviteModal'
 import { getDailyStatus } from '../economy/daily'
+import { syncReferral } from '../economy/referral'
 
 // Home screen: header with the player, then a grid of game cards.
 export default function Launcher({ onSelect, onOpenLeaderboard }) {
@@ -16,6 +18,7 @@ export default function Launcher({ onSelect, onOpenLeaderboard }) {
   const [walletOpen, setWalletOpen] = useState(false)
   const [dailyOpen, setDailyOpen] = useState(false)
   const [daily, setDaily] = useState({ claimable: false, streak: 0 })
+  const [inviteOpen, setInviteOpen] = useState(false)
 
   const displayName = telegramUser?.first_name || 'Player'
 
@@ -30,6 +33,11 @@ export default function Launcher({ onSelect, onOpenLeaderboard }) {
     return () => {
       cancelled = true
     }
+  }, [uid])
+
+  // Referrals: register referrer (first open) + settle qualification.
+  useEffect(() => {
+    if (uid) syncReferral(getStartParam())
   }, [uid])
 
   // Daily spin: check status; auto-open once per day if available.
@@ -108,9 +116,12 @@ export default function Launcher({ onSelect, onOpenLeaderboard }) {
         </button>
         <button
           className="btn btn-primary"
-          onClick={() => shareApp({ ref: uid ? uid.replace('tg_', '') : undefined })}
+          onClick={() => {
+            hapticImpact('light')
+            setInviteOpen(true)
+          }}
         >
-          📣 Share with friends
+          🤝 Invite & earn
         </button>
       </div>
 
@@ -127,6 +138,7 @@ export default function Launcher({ onSelect, onOpenLeaderboard }) {
           }}
         />
       ) : null}
+      {inviteOpen ? <InviteModal onClose={() => setInviteOpen(false)} /> : null}
     </div>
   )
 }

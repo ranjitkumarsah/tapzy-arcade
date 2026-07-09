@@ -45,5 +45,14 @@ service cloud.firestore {
       allow read: if request.auth != null && request.auth.uid == uid;
       allow write: if false;
     }
+
+    // Referrals — invitee can read their own doc; a referrer can read docs that
+    // list them (for stats). Server (Admin) writes only.
+    match /referrals/{uid} {
+      allow read: if request.auth != null
+                  && (request.auth.uid == uid
+                      || resource.data.referredBy == request.auth.uid);
+      allow write: if false;
+    }
   }
 }
