@@ -65,5 +65,11 @@ service cloud.firestore {
     match /purchases/{chargeId} {
       allow read, write: if false;
     }
+
+    // Withdrawals — owner reads their own requests; server (Admin) writes only.
+    match /withdrawals/{id} {
+      allow read: if request.auth != null && resource.data.uid == request.auth.uid;
+      allow write: if false;
+    }
   }
 }

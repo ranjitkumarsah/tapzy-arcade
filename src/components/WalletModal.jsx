@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import { useApp } from '../context/AppContext'
 import { getRecentLedger } from '../economy/wallet'
 import { adsEnabled, showRewarded } from '../ads/monetag'
+import WithdrawModal from './WithdrawModal'
 
 const LABELS = {
   ad_reward: '▶️ Ad reward',
@@ -18,6 +19,7 @@ export default function WalletModal({ onClose }) {
   const { uid, wallet } = useApp()
   const [ledger, setLedger] = useState(null)
   const [earning, setEarning] = useState(false)
+  const [withdrawOpen, setWithdrawOpen] = useState(false)
 
   useEffect(() => {
     getRecentLedger(uid, 15).then(setLedger)
@@ -55,6 +57,9 @@ export default function WalletModal({ onClose }) {
             {earning ? 'Loading ad…' : '▶️ Watch ad to earn coins'}
           </button>
         ) : null}
+        <button className="btn btn-primary" onClick={() => setWithdrawOpen(true)}>
+          💸 Withdraw
+        </button>
 
         <div className="wallet-ledger">
           <div className="wallet-ledger-title">Recent activity</div>
@@ -81,6 +86,7 @@ export default function WalletModal({ onClose }) {
           Close
         </button>
       </div>
+      {withdrawOpen ? <WithdrawModal onClose={() => setWithdrawOpen(false)} /> : null}
     </div>
   )
 }

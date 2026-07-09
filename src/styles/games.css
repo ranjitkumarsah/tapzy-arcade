@@ -346,6 +346,47 @@
   font-size: 0.85rem;
 }
 
+/* ---- Withdraw ---- */
+.withdraw-modal {
+  max-width: 360px;
+  max-height: 84vh;
+  overflow-y: auto;
+  text-align: left;
+}
+.withdraw-modal h2 {
+  text-align: center;
+}
+.wd-label {
+  font-size: 0.78rem;
+  color: var(--hint);
+  margin-top: 6px;
+}
+.wd-input {
+  width: 100%;
+  padding: 10px;
+  border-radius: 10px;
+  border: 1px solid rgba(128, 128, 128, 0.3);
+  background: var(--card);
+  color: var(--text);
+  font-size: 1rem;
+}
+.wd-est {
+  font-size: 0.8rem;
+  color: var(--accent);
+  font-weight: 700;
+}
+.wd-terms {
+  display: flex;
+  gap: 8px;
+  align-items: flex-start;
+  font-size: 0.75rem;
+  color: var(--hint);
+  margin-top: 6px;
+}
+.wd-terms input {
+  margin-top: 2px;
+}
+
 /* ---- Invite ---- */
 .invite-modal {
   text-align: center;
