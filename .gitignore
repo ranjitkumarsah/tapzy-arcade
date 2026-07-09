@@ -1,0 +1,33 @@
+# Dependencies
+node_modules/
+
+# Build output
+dist/
+dist-ssr/
+
+# Env / secrets — NEVER commit these
+.env
+.env.local
+.env.*.local
+*serviceAccount*.json
+firebase-service-account*.json
+
+# Firebase local
+.firebase/
+firebase-debug.log
+firestore-debug.log
+
+# Vercel
+.vercel/
+
+# Editor / OS
+.vscode/*
+!.vscode/extensions.json
+.idea/
+.DS_Store
+Thumbs.db
+
+# Logs
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*

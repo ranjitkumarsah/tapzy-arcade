@@ -1,0 +1,71 @@
+:root {
+  /* These fall back nicely and will be overridden by Telegram themeParams in Phase 1. */
+  --bg: #17212b;
+  --text: #ffffff;
+  --accent: #5eb5f7;
+  --card: #22303c;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body,
+#root {
+  margin: 0;
+  padding: 0;
+  height: 100%;
+}
+
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  -webkit-font-smoothing: antialiased;
+}
+
+.hello {
+  min-height: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  text-align: center;
+  padding: 24px;
+}
+
+.hello h1 {
+  margin: 0;
+  font-size: 2rem;
+  color: var(--accent);
+}
+
+.tagline {
+  margin: 0;
+  font-size: 1.1rem;
+  opacity: 0.9;
+}
+
+.status {
+  margin-top: 8px;
+  padding: 10px 16px;
+  border-radius: 12px;
+  background: var(--card);
+  font-size: 0.95rem;
+}
+
+.status.ok {
+  outline: 1px solid #3aa76d;
+}
+
+.status.warn {
+  outline: 1px solid #c9902f;
+}
+
+.hint {
+  margin-top: 4px;
+  font-size: 0.8rem;
+  opacity: 0.6;
+}
