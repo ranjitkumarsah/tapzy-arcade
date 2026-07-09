@@ -20,5 +20,24 @@ service cloud.firestore {
                    && request.auth.uid == uid
                    && request.resource.data.score is number;
     }
+
+    // ---- v2 economy (server-authoritative; real money) --------------------
+    // Clients may READ their own wallet + ledger, but NEVER write them. All
+    // balance changes go through Admin-SDK serverless functions (which bypass
+    // these rules). Pool/counters are fully private.
+    match /wallets/{uid} {
+      allow read: if request.auth != null && request.auth.uid == uid;
+      allow write: if false;
+    }
+    match /ledger/{uid}/entries/{entryId} {
+      allow read: if request.auth != null && request.auth.uid == uid;
+      allow write: if false;
+    }
+    match /rewardPool/{docId} {
+      allow read, write: if false;
+    }
+    match /adCounters/{docId} {
+      allow read, write: if false;
+    }
   }
 }
