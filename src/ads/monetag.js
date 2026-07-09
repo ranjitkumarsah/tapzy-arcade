@@ -35,20 +35,19 @@ function showFn() {
   return typeof window !== 'undefined' ? window[`show_${ZONE}`] : undefined
 }
 
-// Opt-in rewarded ad. Calls onReward() when the user completes the ad.
-// Fail-open: if ads are unavailable we still grant the reward so players are
-// never blocked by an ad that didn't load.
-export async function showRewarded(onReward) {
+// Opt-in rewarded ad. Resolves true ONLY when Monetag confirms the ad was
+// watched to completion — the caller must grant the reward only on true.
+// If the ad is unavailable, fails, or the user closes it early, returns false
+// and NO reward is given.
+export async function showRewarded() {
   try {
-    if (!ZONE) throw new Error('no-zone')
+    if (!ZONE) return false
     await loadSdk()
     const fn = showFn()
-    if (typeof fn !== 'function') throw new Error('no-fn')
-    await fn()
-    onReward?.()
+    if (typeof fn !== 'function') return false
+    await fn() // resolves only when the reward condition is met
     return true
   } catch {
-    onReward?.()
     return false
   }
 }

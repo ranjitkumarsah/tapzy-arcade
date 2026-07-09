@@ -52,6 +52,15 @@ export function AppProvider({ children }) {
     }
   }, [])
 
+  // Ad shown when a game is opened. Guarded so it can't double-fire if the
+  // player quickly re-enters a game.
+  const showGameOpenAd = useCallback(async () => {
+    const now = Date.now()
+    if (now - lastAdAtRef.current < 30 * 1000) return
+    lastAdAtRef.current = now
+    await showInterstitial()
+  }, [])
+
   const {
     status: authStatus,
     firebaseUser,
@@ -75,6 +84,7 @@ export function AppProvider({ children }) {
       // Convenient UID for score/leaderboard writes in later phases.
       uid: firebaseUser?.uid ?? null,
       maybeShowInterstitial,
+      showGameOpenAd,
     }),
     [
       telegramUser,
@@ -84,6 +94,7 @@ export function AppProvider({ children }) {
       authError,
       authErrorDetail,
       maybeShowInterstitial,
+      showGameOpenAd,
     ],
   )
 

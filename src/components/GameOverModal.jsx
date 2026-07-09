@@ -8,6 +8,7 @@ export default function GameOverModal({
   rank,
   canWatchAd,
   onWatchAd,
+  adMsg,
   onRetry,
   onExit,
   onLeaderboard,
@@ -36,6 +37,7 @@ export default function GameOverModal({
               ▶️ Watch ad for bonus points
             </button>
           ) : null}
+          {adMsg ? <div className="ad-msg">{adMsg}</div> : null}
           <button className="btn btn-primary" onClick={onRetry}>
             🔄 Play again
           </button>

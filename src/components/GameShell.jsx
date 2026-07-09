@@ -10,9 +10,10 @@ import GameOverModal from './GameOverModal'
 // onGameOver(score); GameShell saves the score, shows the modal, and handles
 // retry + back-to-menu (including Telegram's native BackButton).
 export default function GameShell({ game, onExit, onOpenLeaderboard }) {
-  const { uid, telegramUser, maybeShowInterstitial } = useApp()
+  const { uid, telegramUser, maybeShowInterstitial, showGameOpenAd } = useApp()
   const [round, setRound] = useState(0) // bump to remount (retry)
   const [result, setResult] = useState(null) // { score, best, isRecord, rank, bonusClaimed } | null
+  const [adMsg, setAdMsg] = useState(null)
 
   const displayName =
     telegramUser?.first_name || telegramUser?.username || 'Player'
@@ -44,6 +45,11 @@ export default function GameShell({ game, onExit, onOpenLeaderboard }) {
     return () => setVerticalSwipes(true)
   }, [])
 
+  // Show an ad when the game opens (frequency-guarded; no-op if ads unconfigured).
+  useEffect(() => {
+    showGameOpenAd()
+  }, [showGameOpenAd])
+
   const handleGameOver = useCallback(
     async (rawScore) => {
       hapticImpact('medium')
@@ -64,15 +70,19 @@ export default function GameShell({ game, onExit, onOpenLeaderboard }) {
     onExit()
   }, [maybeShowInterstitial, onExit])
 
-  // Rewarded ad → grant a score bonus, then re-save/rank.
-  const handleWatchAd = useCallback(() => {
-    showRewarded(async () => {
-      setResult((prev) => (prev ? { ...prev, bonusClaimed: true } : prev))
-      const base = result?.score ?? 0
-      const bonus = base + Math.max(10, Math.round(base * 0.25))
-      const r = await persist(bonus)
-      setResult({ ...r, bonusClaimed: true })
-    })
+  // Rewarded ad → grant a score bonus ONLY if the ad was actually watched.
+  const handleWatchAd = useCallback(async () => {
+    setAdMsg('Loading ad…')
+    const watched = await showRewarded()
+    if (!watched) {
+      setAdMsg('Ad not completed — no bonus awarded.')
+      return
+    }
+    setAdMsg(null)
+    const base = result?.score ?? 0
+    const bonus = base + Math.max(10, Math.round(base * 0.25))
+    const r = await persist(bonus)
+    setResult({ ...r, bonusClaimed: true })
   }, [persist, result])
 
   const GameComponent = game.component
@@ -104,6 +114,7 @@ export default function GameShell({ game, onExit, onOpenLeaderboard }) {
           rank={result.rank}
           canWatchAd={adsEnabled && !result.bonusClaimed}
           onWatchAd={handleWatchAd}
+          adMsg={adMsg}
           onRetry={handleRetry}
           onExit={handleExitFromModal}
           onLeaderboard={
