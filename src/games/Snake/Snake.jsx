@@ -3,9 +3,9 @@ import { playBlip } from '../../sound/sound'
 
 const GRID = 17 // cells per side
 
-export default function Snake({ onGameOver }) {
+export default function Snake({ onGameOver, initialScore = 0 }) {
   const canvasRef = useRef(null)
-  const [score, setScore] = useState(0)
+  const [score, setScore] = useState(initialScore)
   const endedRef = useRef(false)
 
   useEffect(() => {
@@ -24,7 +24,7 @@ export default function Snake({ onGameOver }) {
     let snake = [{ x: 8, y: 8 }]
     let dir = { x: 1, y: 0 }
     let nextDir = { x: 1, y: 0 }
-    let localScore = 0
+    let localScore = initialScore
     let step = 135 // ms per move
     let acc = 0
     let last = performance.now()

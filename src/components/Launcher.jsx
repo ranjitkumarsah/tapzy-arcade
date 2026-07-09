@@ -4,11 +4,14 @@ import { GAMES } from '../games/registry'
 import { getHighScore } from '../firebase/scores'
 import { hapticImpact, shareApp } from '../telegram/initTelegram'
 import SoundToggle from './SoundToggle'
+import CoinChip from './CoinChip'
+import WalletModal from './WalletModal'
 
 // Home screen: header with the player, then a grid of game cards.
 export default function Launcher({ onSelect, onOpenLeaderboard }) {
   const { telegramUser, uid } = useApp()
   const [bests, setBests] = useState({})
+  const [walletOpen, setWalletOpen] = useState(false)
 
   const displayName = telegramUser?.first_name || 'Player'
 
@@ -39,6 +42,7 @@ export default function Launcher({ onSelect, onOpenLeaderboard }) {
           <div className="launcher-hi">Hi, {displayName} 👋</div>
           <div className="launcher-sub">Pick a game</div>
         </div>
+        <CoinChip onClick={() => setWalletOpen(true)} />
         <SoundToggle />
       </header>
 
@@ -80,6 +84,8 @@ export default function Launcher({ onSelect, onOpenLeaderboard }) {
       </div>
 
       <p className="launcher-footer">More games coming soon 🎮</p>
+
+      {walletOpen ? <WalletModal onClose={() => setWalletOpen(false)} /> : null}
     </div>
   )
 }

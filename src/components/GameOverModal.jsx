@@ -1,13 +1,16 @@
-// Shown by GameShell when a game ends. In Phase 6 the "Watch ad for bonus"
-// button and leaderboard rank get wired in; for now: score, best, retry, menu.
+// Shown by GameShell when a game ends.
 export default function GameOverModal({
   title,
   score,
   best,
   isRecord,
   rank,
+  canContinue,
+  continueCost,
+  onContinue,
   canWatchAd,
   onWatchAd,
+  busy,
   adMsg,
   onRetry,
   onExit,
@@ -33,14 +36,20 @@ export default function GameOverModal({
         {rank ? <div className="best-line">🏆 Rank #{rank}</div> : null}
 
         <div className="modal-actions">
+          {canContinue ? (
+            <button className="btn btn-primary" onClick={onContinue} disabled={busy}>
+              🔄 Continue — keep score ({continueCost} 🪙)
+            </button>
+          ) : null}
           {canWatchAd ? (
-            <button className="btn btn-reward" onClick={onWatchAd}>
-              ▶️ Watch ad for bonus points
+            <button className="btn btn-reward" onClick={onWatchAd} disabled={busy}>
+              ▶️ Watch ad to earn coins
             </button>
           ) : null}
           {adMsg ? <div className="ad-msg">{adMsg}</div> : null}
-          <button className="btn btn-primary" onClick={onRetry}>
-            🔄 Play again
+
+          <button className="btn btn-secondary" onClick={onRetry} disabled={busy}>
+            🔁 Play again
           </button>
           {onLeaderboard ? (
             <button className="btn btn-secondary" onClick={onLeaderboard}>

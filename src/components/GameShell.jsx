@@ -2,31 +2,35 @@ import { Suspense, useCallback, useEffect, useState } from 'react'
 import { useApp } from '../context/AppContext'
 import {
   showBackButton,
-  hapticImpact,
   setVerticalSwipes,
   shareApp,
 } from '../telegram/initTelegram'
 import { saveScore } from '../firebase/scores'
 import { submitLeaderboardScore, getMyRank } from '../firebase/leaderboard'
 import { adsEnabled, showRewarded } from '../ads/monetag'
+import { spendPerk } from '../economy/spend'
+import { PERKS } from '../economy/perks'
 import { startMusic, stopMusic, playWin, playLose } from '../sound/sound'
 import GameOverModal from './GameOverModal'
 import SoundToggle from './SoundToggle'
+import CoinChip from './CoinChip'
+import WalletModal from './WalletModal'
 
 // Wraps any game with a consistent interface. The game only needs to call
-// onGameOver(score); GameShell saves the score, shows the modal, and handles
-// retry + back-to-menu (including Telegram's native BackButton).
+// onGameOver(score); GameShell saves the score, shows the modal, handles retry,
+// earning coins (rewarded ad), and Continue (spend coins to revive keeping score).
 export default function GameShell({ game, onExit, onOpenLeaderboard }) {
-  const { uid, telegramUser, maybeShowInterstitial, showGameOpenAd } = useApp()
-  const [round, setRound] = useState(0) // bump to remount (retry)
-  const [result, setResult] = useState(null) // { score, best, isRecord, rank, bonusClaimed } | null
+  const { uid, telegramUser, wallet, maybeShowInterstitial, showGameOpenAd } = useApp()
+  const [round, setRound] = useState(0) // bump to remount (retry/continue)
+  const [continueScore, setContinueScore] = useState(0) // score carried on revive
+  const [result, setResult] = useState(null)
   const [adMsg, setAdMsg] = useState(null)
+  const [busy, setBusy] = useState(false)
+  const [walletOpen, setWalletOpen] = useState(false)
 
-  const displayName =
-    telegramUser?.first_name || telegramUser?.username || 'Player'
+  const displayName = telegramUser?.first_name || telegramUser?.username || 'Player'
+  const continueCost = PERKS.continue.cost
 
-  // Persist a score to Firestore + leaderboard and compute rank. Reused by
-  // game-over and by the rewarded-ad bonus.
   const persist = useCallback(
     async (rawScore) => {
       const { best, isRecord } = await saveScore(game.id, rawScore, uid)
@@ -40,24 +44,21 @@ export default function GameShell({ game, onExit, onOpenLeaderboard }) {
     [game.id, uid, displayName],
   )
 
-  // Telegram BackButton returns to the launcher.
   useEffect(() => {
     const cleanup = showBackButton(onExit)
     return cleanup
   }, [onExit])
 
-  // Prevent pull-to-close from stealing swipes/taps while a game is open.
   useEffect(() => {
     setVerticalSwipes(false)
     return () => setVerticalSwipes(true)
   }, [])
 
-  // Show an ad when the game opens (frequency-guarded; no-op if ads unconfigured).
   useEffect(() => {
     showGameOpenAd()
   }, [showGameOpenAd])
 
-  // Background music for this game; restart on retry, stop when leaving.
+  // Background music; restart on retry/continue, stop when leaving.
   useEffect(() => {
     startMusic(game.id)
     return () => stopMusic()
@@ -67,16 +68,17 @@ export default function GameShell({ game, onExit, onOpenLeaderboard }) {
     async (rawScore) => {
       stopMusic()
       const r = await persist(rawScore)
-      // Celebrate a new personal best with win music; otherwise a lose sting.
       if (r.isRecord) playWin()
       else playLose()
-      setResult({ ...r, bonusClaimed: false })
+      setResult(r)
+      setAdMsg(null)
     },
     [persist],
   )
 
   const handleRetry = useCallback(async () => {
-    await maybeShowInterstitial() // frequency-capped; usually instant
+    await maybeShowInterstitial()
+    setContinueScore(0)
     setResult(null)
     setRound((r) => r + 1)
   }, [maybeShowInterstitial])
@@ -86,22 +88,35 @@ export default function GameShell({ game, onExit, onOpenLeaderboard }) {
     onExit()
   }, [maybeShowInterstitial, onExit])
 
-  // Rewarded ad → grant a score bonus ONLY if the ad was actually watched.
-  const handleWatchAd = useCallback(async () => {
+  // Rewarded ad → coins credited server-side via the S2S postback (balance
+  // updates live). We only show the ad; we never credit on the client.
+  const handleEarnCoins = useCallback(async () => {
+    setBusy(true)
     setAdMsg('Loading ad…')
-    const watched = await showRewarded()
-    if (!watched) {
-      setAdMsg('Ad not completed — no bonus awarded.')
+    const watched = await showRewarded(uid ? uid.replace('tg_', '') : undefined)
+    setBusy(false)
+    setAdMsg(watched ? '🪙 Coins added to your wallet!' : 'Ad not completed.')
+  }, [uid])
+
+  // Spend coins to continue: revive keeping the current score.
+  const handleContinue = useCallback(async () => {
+    if (!result) return
+    setBusy(true)
+    setAdMsg('Reviving…')
+    const res = await spendPerk('continue', { gameId: game.id, score: result.score })
+    setBusy(false)
+    if (!res.ok) {
+      setAdMsg(res.reason === 'insufficient' ? 'Not enough coins.' : 'Continue failed.')
       return
     }
     setAdMsg(null)
-    const base = result?.score ?? 0
-    const bonus = base + Math.max(10, Math.round(base * 0.25))
-    const r = await persist(bonus)
-    setResult({ ...r, bonusClaimed: true })
-  }, [persist, result])
+    setContinueScore(result.score) // carry score into the revived run
+    setResult(null)
+    setRound((r) => r + 1)
+  }, [result, game.id])
 
   const GameComponent = game.component
+  const canContinue = Boolean(game.canContinue) && wallet.total >= continueCost
 
   return (
     <div className="game-shell">
@@ -112,12 +127,19 @@ export default function GameShell({ game, onExit, onOpenLeaderboard }) {
         <span className="game-title">
           {game.icon} {game.title}
         </span>
-        <SoundToggle />
+        <div className="game-header-right">
+          <CoinChip onClick={() => setWalletOpen(true)} />
+          <SoundToggle />
+        </div>
       </header>
 
       <div className="game-area">
         <Suspense fallback={<div className="loading">Loading…</div>}>
-          <GameComponent key={round} onGameOver={handleGameOver} />
+          <GameComponent
+            key={round}
+            onGameOver={handleGameOver}
+            initialScore={continueScore}
+          />
         </Suspense>
       </div>
 
@@ -128,14 +150,16 @@ export default function GameShell({ game, onExit, onOpenLeaderboard }) {
           best={result.best}
           isRecord={result.isRecord}
           rank={result.rank}
-          canWatchAd={adsEnabled && !result.bonusClaimed}
-          onWatchAd={handleWatchAd}
+          canContinue={canContinue}
+          continueCost={continueCost}
+          onContinue={handleContinue}
+          canWatchAd={adsEnabled}
+          onWatchAd={handleEarnCoins}
+          busy={busy}
           adMsg={adMsg}
           onRetry={handleRetry}
           onExit={handleExitFromModal}
-          onLeaderboard={
-            onOpenLeaderboard ? () => onOpenLeaderboard(game.id) : null
-          }
+          onLeaderboard={onOpenLeaderboard ? () => onOpenLeaderboard(game.id) : null}
           onShare={() =>
             shareApp({
               ref: uid ? uid.replace('tg_', '') : undefined,
@@ -144,6 +168,8 @@ export default function GameShell({ game, onExit, onOpenLeaderboard }) {
           }
         />
       ) : null}
+
+      {walletOpen ? <WalletModal onClose={() => setWalletOpen(false)} /> : null}
     </div>
   )
 }

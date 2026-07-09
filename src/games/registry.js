@@ -39,6 +39,7 @@ export const GAMES = [
     title: 'Snake',
     icon: '🐍',
     scoreLabel: 'Best',
+    canContinue: true, // revive keeping score
     component: lazy(() => import('./Snake/Snake.jsx')),
   },
   {
@@ -46,6 +47,7 @@ export const GAMES = [
     title: 'Flappy',
     icon: '🐤',
     scoreLabel: 'Best',
+    canContinue: true, // revive keeping score
     component: lazy(() => import('./FlappyClone/FlappyClone.jsx')),
   },
 ]

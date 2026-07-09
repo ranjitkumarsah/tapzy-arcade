@@ -1,8 +1,8 @@
 import { useEffect, useRef, useState } from 'react'
 
-export default function FlappyClone({ onGameOver }) {
+export default function FlappyClone({ onGameOver, initialScore = 0 }) {
   const canvasRef = useRef(null)
-  const [score, setScore] = useState(0)
+  const [score, setScore] = useState(initialScore)
   const endedRef = useRef(false)
 
   useEffect(() => {
@@ -33,7 +33,7 @@ export default function FlappyClone({ onGameOver }) {
     let birdY = H * 0.45
     let vel = 0
     let pipes = [] // { x, gapY, passed }
-    let localScore = 0
+    let localScore = initialScore
     let last = performance.now()
     let spawnTimer = 0
     let raf = 0

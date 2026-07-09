@@ -15,6 +15,7 @@ import {
 } from '../telegram/initTelegram'
 import { useTelegramAuth } from '../telegram/useTelegramAuth'
 import { initMonetag, showInterstitial } from '../ads/monetag'
+import { watchWallet } from '../economy/wallet'
 
 // Ad pacing rules (PRD): interstitial at most every Nth game, and never more
 // than once per few minutes.
@@ -52,6 +53,18 @@ export function AppProvider({ children }) {
     }
   }, [])
 
+  // Live wallet balance (read-only; server changes the numbers).
+  const [wallet, setWallet] = useState({ earnedCoins: 0, bonusCoins: 0, total: 0 })
+  const uid = firebaseUser?.uid ?? null
+  useEffect(() => {
+    if (!uid) {
+      setWallet({ earnedCoins: 0, bonusCoins: 0, total: 0 })
+      return
+    }
+    const unsub = watchWallet(uid, setWallet)
+    return unsub
+  }, [uid])
+
   // Ad shown when a game is opened. Guarded so it can't double-fire if the
   // player quickly re-enters a game.
   const showGameOpenAd = useCallback(async () => {
@@ -81,8 +94,8 @@ export function AppProvider({ children }) {
       firebaseUser,
       authError,
       authErrorDetail,
-      // Convenient UID for score/leaderboard writes in later phases.
-      uid: firebaseUser?.uid ?? null,
+      uid,
+      wallet,
       maybeShowInterstitial,
       showGameOpenAd,
     }),
@@ -93,6 +106,8 @@ export function AppProvider({ children }) {
       firebaseUser,
       authError,
       authErrorDetail,
+      uid,
+      wallet,
       maybeShowInterstitial,
       showGameOpenAd,
     ],

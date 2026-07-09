@@ -67,14 +67,17 @@ export function startAutoInApp() {
 }
 
 // Opt-in rewarded ad. Resolves true ONLY when Monetag confirms the ad was
-// watched to completion — the caller must grant the reward only on true.
-export async function showRewarded() {
+// watched. Pass the user id so it rides along as the ad "ymid" and comes back
+// in the S2S postback to /api/adReward (which credits the coins server-side).
+export async function showRewarded(userId) {
   try {
     if (!ZONE) return false
     await loadSdk(ZONE)
     const fn = showFn(ZONE)
     if (typeof fn !== 'function') return false
-    await fn() // resolves only when the reward condition is met
+    // ymid = the sub-id the network echoes back to the postback. Exact option
+    // name may need adjusting once Monetag's format is confirmed (V2-P0 gate).
+    await fn(userId ? { ymid: String(userId) } : undefined)
     return true
   } catch {
     return false

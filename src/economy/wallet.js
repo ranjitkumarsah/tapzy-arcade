@@ -1,4 +1,12 @@
-import { doc, onSnapshot } from 'firebase/firestore'
+import {
+  collection,
+  doc,
+  getDocs,
+  limit,
+  onSnapshot,
+  orderBy,
+  query,
+} from 'firebase/firestore'
 import { db } from '../firebase/firebaseConfig'
 
 // Client can only READ its wallet (Firestore rules forbid writes). Balances are
@@ -22,4 +30,20 @@ export function watchWallet(uid, cb) {
     },
     () => cb({ earnedCoins: 0, bonusCoins: 0, total: 0 }),
   )
+}
+
+// Recent ledger entries (for the wallet history list).
+export async function getRecentLedger(uid, n = 15) {
+  if (!db || !uid) return []
+  try {
+    const q = query(
+      collection(db, 'ledger', uid, 'entries'),
+      orderBy('createdAt', 'desc'),
+      limit(n),
+    )
+    const snap = await getDocs(q)
+    return snap.docs.map((d) => ({ id: d.id, ...d.data() }))
+  } catch {
+    return []
+  }
 }

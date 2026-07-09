@@ -112,6 +112,88 @@
   flex-shrink: 0;
 }
 
+/* ---- Coins / wallet ---- */
+.coin-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  background: var(--card);
+  border: none;
+  border-radius: 999px;
+  padding: 7px 12px;
+  font-weight: 700;
+  font-size: 0.95rem;
+  color: var(--text);
+  cursor: pointer;
+  flex-shrink: 0;
+}
+.game-header-right {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.wallet-modal {
+  max-width: 340px;
+  text-align: left;
+}
+.wallet-modal h2 {
+  text-align: center;
+}
+.wallet-balances {
+  display: flex;
+  gap: 12px;
+}
+.wallet-bal {
+  flex: 1;
+  background: var(--card);
+  border-radius: 14px;
+  padding: 14px;
+  text-align: center;
+}
+.wallet-bal-num {
+  font-size: 1.8rem;
+  font-weight: 800;
+  color: var(--accent);
+}
+.wallet-bal-label {
+  font-size: 0.75rem;
+  color: var(--hint);
+}
+.wallet-hint {
+  font-size: 0.8rem;
+  color: var(--hint);
+  margin: 4px 0;
+}
+.wallet-ledger-title {
+  font-weight: 700;
+  margin: 6px 0;
+}
+.wallet-ledger-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  max-height: 180px;
+  overflow-y: auto;
+}
+.wallet-ledger-list li {
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.9rem;
+  padding: 6px 0;
+  border-bottom: 1px solid rgba(128, 128, 128, 0.15);
+}
+.amt-pos {
+  color: #3aa76d;
+  font-weight: 700;
+}
+.amt-neg {
+  color: #ec6b56;
+  font-weight: 700;
+}
+
 /* ---- Buttons ---- */
 .btn {
   border: none;
