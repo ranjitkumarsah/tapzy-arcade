@@ -1,20 +1,23 @@
 import { useState } from 'react'
 
-// Animated launch splash. Uses public/logo.png if present, otherwise a styled
-// monogram. Shown while auth resolves (and for a short minimum so it doesn't
-// flash by).
+// Logo source priority: the bot's own profile photo (fetched server-side via
+// /api/botPhoto) → a bundled public/logo.png → a styled monogram.
+const SOURCES = ['/api/botPhoto', '/logo.png']
+
 export default function SplashScreen() {
-  const [imgOk, setImgOk] = useState(true)
+  const [idx, setIdx] = useState(0)
+  const src = idx < SOURCES.length ? SOURCES[idx] : null
 
   return (
     <div className="splash">
       <div className="splash-inner">
-        {imgOk ? (
+        {src ? (
           <img
-            src="/logo.png"
+            key={src}
+            src={src}
             className="splash-logo"
             alt="Tapzy Arcade"
-            onError={() => setImgOk(false)}
+            onError={() => setIdx((i) => i + 1)}
           />
         ) : (
           <div className="splash-logo splash-logo--fallback" aria-hidden="true">
