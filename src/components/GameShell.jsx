@@ -1,6 +1,11 @@
 import { Suspense, useCallback, useEffect, useState } from 'react'
 import { useApp } from '../context/AppContext'
-import { showBackButton, hapticImpact, setVerticalSwipes } from '../telegram/initTelegram'
+import {
+  showBackButton,
+  hapticImpact,
+  setVerticalSwipes,
+  shareApp,
+} from '../telegram/initTelegram'
 import { saveScore } from '../firebase/scores'
 import { submitLeaderboardScore, getMyRank } from '../firebase/leaderboard'
 import { adsEnabled, showRewarded } from '../ads/monetag'
@@ -119,6 +124,12 @@ export default function GameShell({ game, onExit, onOpenLeaderboard }) {
           onExit={handleExitFromModal}
           onLeaderboard={
             onOpenLeaderboard ? () => onOpenLeaderboard(game.id) : null
+          }
+          onShare={() =>
+            shareApp({
+              ref: uid ? uid.replace('tg_', '') : undefined,
+              text: `I scored ${result.score} in ${game.title} on Tapzy Arcade — can you beat me? 🎮`,
+            })
           }
         />
       ) : null}

@@ -3,6 +3,7 @@ import { useApp } from './context/AppContext'
 import Launcher from './components/Launcher'
 import GameShell from './components/GameShell'
 import Leaderboard from './components/Leaderboard'
+import ErrorBoundary from './components/ErrorBoundary'
 
 export default function App() {
   const { authStatus } = useApp()
@@ -39,11 +40,13 @@ export default function App() {
   return (
     <main className="app">
       {view === 'game' && activeGame ? (
-        <GameShell
-          game={activeGame}
-          onExit={backToLauncher}
-          onOpenLeaderboard={openLeaderboard}
-        />
+        <ErrorBoundary onReset={backToLauncher}>
+          <GameShell
+            game={activeGame}
+            onExit={backToLauncher}
+            onOpenLeaderboard={openLeaderboard}
+          />
+        </ErrorBoundary>
       ) : view === 'leaderboard' ? (
         <Leaderboard initialGameId={lbGameId} onExit={backToLauncher} />
       ) : (

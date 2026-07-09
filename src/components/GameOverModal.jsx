@@ -12,6 +12,7 @@ export default function GameOverModal({
   onRetry,
   onExit,
   onLeaderboard,
+  onShare,
 }) {
   return (
     <div className="modal-backdrop" role="dialog" aria-modal="true">
@@ -44,6 +45,11 @@ export default function GameOverModal({
           {onLeaderboard ? (
             <button className="btn btn-secondary" onClick={onLeaderboard}>
               🏆 Leaderboard
+            </button>
+          ) : null}
+          {onShare ? (
+            <button className="btn btn-secondary" onClick={onShare}>
+              📣 Challenge a friend
             </button>
           ) : null}
           <button className="btn btn-secondary" onClick={onExit}>

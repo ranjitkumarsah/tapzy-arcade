@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react'
 import { useApp } from '../context/AppContext'
 import { GAMES } from '../games/registry'
 import { getHighScore } from '../firebase/scores'
-import { hapticImpact } from '../telegram/initTelegram'
+import { hapticImpact, shareApp } from '../telegram/initTelegram'
 
 // Home screen: header with the player, then a grid of game cards.
 export default function Launcher({ onSelect, onOpenLeaderboard }) {
@@ -59,15 +59,23 @@ export default function Launcher({ onSelect, onOpenLeaderboard }) {
         ))}
       </div>
 
-      <button
-        className="btn btn-secondary lb-open-btn"
-        onClick={() => {
-          hapticImpact('light')
-          onOpenLeaderboard()
-        }}
-      >
-        🏆 Leaderboard
-      </button>
+      <div className="launcher-actions">
+        <button
+          className="btn btn-secondary"
+          onClick={() => {
+            hapticImpact('light')
+            onOpenLeaderboard()
+          }}
+        >
+          🏆 Leaderboard
+        </button>
+        <button
+          className="btn btn-primary"
+          onClick={() => shareApp({ ref: uid ? uid.replace('tg_', '') : undefined })}
+        >
+          📣 Share with friends
+        </button>
+      </div>
 
       <p className="launcher-footer">More games coming soon 🎮</p>
     </div>

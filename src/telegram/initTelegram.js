@@ -1,3 +1,7 @@
+// Bot/app identity (from BotFather registration).
+export const BOT_USERNAME = 'TapzyArcadeBot'
+export const APP_SHORT_NAME = 'arcade'
+
 // Central Telegram WebApp integration.
 //
 // Responsibilities:
@@ -113,6 +117,26 @@ export function showBackButton(handler) {
 
 export function hapticImpact(style = 'light') {
   webApp?.HapticFeedback?.impactOccurred?.(style)
+}
+
+export function hapticNotify(type = 'success') {
+  webApp?.HapticFeedback?.notificationOccurred?.(type)
+}
+
+// Deep link to the Mini App. `ref` seeds referral tracking for later (v2).
+export function getShareLink(ref) {
+  const base = `https://t.me/${BOT_USERNAME}/${APP_SHORT_NAME}`
+  return ref ? `${base}?startapp=ref_${ref}` : base
+}
+
+// Open Telegram's native share sheet with the app link (growth loop).
+export function shareApp({ ref, text } = {}) {
+  const link = getShareLink(ref)
+  const message = text || 'Play free mini games on Tapzy Arcade! 🎮'
+  const shareUrl = `https://t.me/share/url?url=${encodeURIComponent(link)}&text=${encodeURIComponent(message)}`
+  hapticImpact('light')
+  if (webApp?.openTelegramLink) webApp.openTelegramLink(shareUrl)
+  else window.open(shareUrl, '_blank')
 }
 
 // Disable Telegram's vertical swipe-to-close during gameplay (Bot API 7.7+),
