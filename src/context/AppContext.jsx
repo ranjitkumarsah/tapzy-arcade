@@ -53,18 +53,6 @@ export function AppProvider({ children }) {
     }
   }, [])
 
-  // Live wallet balance (read-only; server changes the numbers).
-  const [wallet, setWallet] = useState({ earnedCoins: 0, bonusCoins: 0, total: 0 })
-  const uid = firebaseUser?.uid ?? null
-  useEffect(() => {
-    if (!uid) {
-      setWallet({ earnedCoins: 0, bonusCoins: 0, total: 0 })
-      return
-    }
-    const unsub = watchWallet(uid, setWallet)
-    return unsub
-  }, [uid])
-
   // Ad shown when a game is opened. Guarded so it can't double-fire if the
   // player quickly re-enters a game.
   const showGameOpenAd = useCallback(async () => {
@@ -84,6 +72,19 @@ export function AppProvider({ children }) {
     telegramUser,
     insideTelegram: isInsideTelegram,
   })
+
+  // Live wallet balance (read-only; server changes the numbers).
+  // Declared AFTER useTelegramAuth so firebaseUser is initialized.
+  const uid = firebaseUser?.uid ?? null
+  const [wallet, setWallet] = useState({ earnedCoins: 0, bonusCoins: 0, total: 0 })
+  useEffect(() => {
+    if (!uid) {
+      setWallet({ earnedCoins: 0, bonusCoins: 0, total: 0 })
+      return
+    }
+    const unsub = watchWallet(uid, setWallet)
+    return unsub
+  }, [uid])
 
   const value = useMemo(
     () => ({
