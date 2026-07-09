@@ -4,6 +4,7 @@ import App from './App.jsx'
 import { AppProvider } from './context/AppContext.jsx'
 import './styles/global.css'
 import './styles/theme.css'
+import './styles/games.css'
 
 ReactDOM.createRoot(document.getElementById('root')).render(
   <React.StrictMode>

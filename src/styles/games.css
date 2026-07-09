@@ -1,0 +1,312 @@
+/* ---- App shell ---- */
+.app {
+  min-height: var(--tg-viewport-stable-height, 100vh);
+  display: flex;
+  flex-direction: column;
+}
+
+.app-loading {
+  min-height: var(--tg-viewport-stable-height, 100vh);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+}
+.app-logo {
+  font-size: 1.6rem;
+  font-weight: 700;
+  color: var(--accent);
+}
+.loading {
+  color: var(--hint);
+  padding: 24px;
+  text-align: center;
+}
+
+/* ---- Buttons ---- */
+.btn {
+  border: none;
+  border-radius: 12px;
+  padding: 12px 16px;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+}
+.btn-primary {
+  background: var(--accent);
+  color: var(--accent-text);
+}
+.btn-secondary {
+  background: var(--card);
+  color: var(--text);
+}
+.link-btn {
+  background: none;
+  border: none;
+  color: var(--link);
+  font-size: 0.95rem;
+  cursor: pointer;
+  padding: 6px 4px;
+}
+
+/* ---- Launcher ---- */
+.launcher {
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+.launcher-header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.avatar--sm {
+  width: 44px;
+  height: 44px;
+  font-size: 1.1rem;
+}
+.launcher-hi {
+  font-size: 1.1rem;
+  font-weight: 700;
+}
+.launcher-sub {
+  font-size: 0.85rem;
+  color: var(--hint);
+}
+.game-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 12px;
+}
+.game-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  padding: 20px 12px;
+  border: none;
+  border-radius: 16px;
+  background: var(--card);
+  color: var(--text);
+  cursor: pointer;
+  transition: transform 0.08s ease;
+}
+.game-card:active {
+  transform: scale(0.96);
+}
+.game-card-icon {
+  font-size: 2.4rem;
+}
+.game-card-title {
+  font-weight: 600;
+}
+.game-card-best {
+  font-size: 0.75rem;
+  color: var(--hint);
+}
+.launcher-footer {
+  text-align: center;
+  color: var(--hint);
+  font-size: 0.8rem;
+}
+
+/* ---- Game shell ---- */
+.game-shell {
+  display: flex;
+  flex-direction: column;
+  min-height: var(--tg-viewport-stable-height, 100vh);
+}
+.game-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 8px 12px;
+  border-bottom: 1px solid rgba(128, 128, 128, 0.2);
+}
+.game-title {
+  font-weight: 700;
+}
+.game-header-spacer {
+  width: 48px;
+}
+.game-area {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 16px;
+}
+
+/* ---- Game Over modal ---- */
+.modal-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.55);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+  z-index: 50;
+}
+.modal {
+  background: var(--bg);
+  border-radius: 20px;
+  padding: 24px;
+  width: 100%;
+  max-width: 320px;
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+.modal h2 {
+  margin: 0;
+}
+.modal-score {
+  display: flex;
+  flex-direction: column;
+}
+.score-value {
+  font-size: 2.6rem;
+  font-weight: 800;
+  color: var(--accent);
+}
+.score-label {
+  font-size: 0.8rem;
+  color: var(--hint);
+}
+.record-badge {
+  font-weight: 700;
+  color: #3aa76d;
+}
+.best-line {
+  color: var(--hint);
+}
+.modal-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+/* ---- Tic-Tac-Toe ---- */
+.ttt {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+}
+.ttt-status {
+  font-size: 1.1rem;
+  font-weight: 600;
+  min-height: 1.4em;
+}
+.ttt-board {
+  display: grid;
+  grid-template-columns: repeat(3, 88px);
+  grid-template-rows: repeat(3, 88px);
+  gap: 8px;
+}
+.ttt-cell {
+  font-size: 2.6rem;
+  font-weight: 800;
+  border: none;
+  border-radius: 12px;
+  background: var(--card);
+  color: var(--text);
+  cursor: pointer;
+}
+.ttt-x {
+  color: var(--accent);
+}
+.ttt-o {
+  color: #ec6b56;
+}
+
+/* ---- Memory Match ---- */
+.memory {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 14px;
+  width: 100%;
+}
+.memory-stats {
+  display: flex;
+  gap: 20px;
+  color: var(--hint);
+  font-size: 0.9rem;
+}
+.memory-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 8px;
+  width: 100%;
+  max-width: 340px;
+}
+.memory-card {
+  aspect-ratio: 1;
+  font-size: 1.8rem;
+  border: none;
+  border-radius: 12px;
+  background: var(--accent);
+  color: var(--accent-text);
+  cursor: pointer;
+}
+.memory-card.is-up {
+  background: var(--card);
+}
+.memory-card.is-matched {
+  opacity: 0.45;
+}
+
+/* ---- Quiz ---- */
+.quiz {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  width: 100%;
+  max-width: 420px;
+}
+.quiz-progress {
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.85rem;
+  color: var(--hint);
+}
+.quiz-cat {
+  font-style: italic;
+}
+.quiz-question {
+  font-size: 1.2rem;
+  font-weight: 600;
+  text-align: center;
+  min-height: 3em;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.quiz-options {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.quiz-option {
+  padding: 14px;
+  border: none;
+  border-radius: 12px;
+  background: var(--card);
+  color: var(--text);
+  font-size: 1rem;
+  cursor: pointer;
+  text-align: left;
+}
+.quiz-option.is-correct {
+  background: #3aa76d;
+  color: #fff;
+}
+.quiz-option.is-wrong {
+  background: #ec6b56;
+  color: #fff;
+}
