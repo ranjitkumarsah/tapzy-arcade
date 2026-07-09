@@ -75,9 +75,12 @@ export async function showRewarded(userId) {
     await loadSdk(ZONE)
     const fn = showFn(ZONE)
     if (typeof fn !== 'function') return false
-    // ymid = the sub-id the network echoes back to the postback. Exact option
-    // name may need adjusting once Monetag's format is confirmed (V2-P0 gate).
-    await fn(userId ? { ymid: String(userId) } : undefined)
+    // Monetag's YMID is a single value we pass and get back in the postback.
+    // We pack "<userId>__<uniqueNonce>" so the server can recover the user AND
+    // treat each watch as a unique (idempotent) event.
+    const nonce = `${Date.now()}${Math.floor(Math.random() * 1e6)}`
+    const ymid = userId ? `${userId}__${nonce}` : nonce
+    await fn({ ymid })
     return true
   } catch {
     return false

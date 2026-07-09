@@ -25,9 +25,9 @@ export default async function handler(req, res) {
   console.log('adReward hit:', {
     method: req.method,
     keys: Object.keys(q),
-    uid: q.uid ?? q.ymid ?? q.user_id ?? null,
-    event: q.event_id ?? q.reqid ?? q.transaction_id ?? null,
-    reward: q.reward ?? q.value ?? null,
+    ymid: q.ymid ?? q.uid ?? null,
+    paid: q.paid ?? q.reward_event_type ?? null,
+    price: q.estimated_price ?? q.reward ?? null,
     hasSecret: Boolean(q.secret || req.headers['x-postback-secret']),
   })
 
@@ -39,24 +39,27 @@ export default async function handler(req, res) {
     return res.end('forbidden')
   }
 
-  // 2) extract params (support common alias names across networks)
-  const rawUid = pick(q.uid, q.ymid, q.user_id, q.sub_id, q.subid, q.telegram_id)
-  const eventId = pick(
-    q.event_id,
-    q.transaction_id,
-    q.click_id,
-    q.reqid,
-    q.requestvar,
-    q.request_var,
-    q.impression_id,
-    q.var,
-  )
-  const reward = Number(pick(q.reward, q.value, q.payout, q.estimated_price, 0)) || 0
-  if (!rawUid || !eventId) {
+  // 2) Monetag sends YMID = the "<userId>__<nonce>" we packed on the client.
+  // Recover the user id from the first segment; use the whole YMID as the
+  // unique event id (idempotency key). Also accept plain aliases for the curl
+  // test path.
+  const ymid = pick(q.ymid, q.uid, q.user_id, q.sub_id, q.subid)
+  if (!ymid) {
     res.statusCode = 400
-    return res.end('missing_params')
+    return res.end('missing_ymid')
   }
-  const uid = String(rawUid).startsWith('tg_') ? String(rawUid) : `tg_${rawUid}`
+  const rawUid = String(ymid).split('__')[0]
+  const eventId = pick(q.event_id, q.transaction_id, String(ymid)) // full ymid = unique
+  const uid = rawUid.startsWith('tg_') ? rawUid : `tg_${rawUid}`
+
+  // Only paid impressions fund withdrawable coins. Monetag "reward event type"
+  // is "yes" when paid. If the flag is absent (e.g. curl test), we don't block.
+  const paid = pick(q.paid, q.reward_event_type)
+  if (paid === 'no') {
+    res.statusCode = 200
+    return res.end('unpaid') // impression not monetized -> no coins
+  }
+  const reward = Number(pick(q.reward, q.value, q.payout, q.estimated_price, 0)) || 0
 
   try {
     const db = getDb()
