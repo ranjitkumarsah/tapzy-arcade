@@ -120,6 +120,7 @@ export default function Launcher({ onSelect, onOpenLeaderboard }) {
       {dailyOpen ? (
         <DailyModal
           streak={daily.streak}
+          onClaimed={(streak) => setDaily({ claimable: false, streak })}
           onClose={() => {
             setDailyOpen(false)
             getDailyStatus(uid).then(setDaily)

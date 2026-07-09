@@ -2,7 +2,7 @@ import { doc, getDoc } from 'firebase/firestore'
 import { auth, db } from '../firebase/firebaseConfig'
 
 // Wheel segments — must match the server's WHEEL order.
-export const WHEEL = [10, 15, 20, 25, 50, 100]
+export const WHEEL = [1, 2, 3, 5, 8, 15]
 
 const todayYMD = () => new Date().toISOString().slice(0, 10).replace(/-/g, '')
 

@@ -9,7 +9,7 @@ import { getDb } from '../server/firebaseAdmin.js'
 import { creditCoins } from '../server/economy.js'
 
 // Wheel segments (must match the client's WHEEL order) + pick weights.
-const WHEEL = [10, 15, 20, 25, 50, 100]
+const WHEEL = [1, 2, 3, 5, 8, 15]
 const WEIGHTS = [30, 25, 20, 15, 7, 3]
 
 function pickIndex() {
@@ -64,7 +64,7 @@ export default async function handler(req, res) {
 
     const streak = s.lastClaimDate === yesterday ? (s.current || 0) + 1 : 1
     const wheelIndex = pickIndex()
-    const streakBonus = Math.min((streak - 1) * 5, 50)
+    const streakBonus = Math.min(streak - 1, 10) // small: +1/day up to +10
     const reward = WHEEL[wheelIndex] + streakBonus
 
     await creditCoins({
