@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 
 // Player is X, a simple AI is O. Score: win 100, draw 50, loss 0.
 const LINES = [
@@ -49,25 +49,27 @@ function aiMove(board) {
 export default function TicTacToe({ onGameOver }) {
   const [board, setBoard] = useState(Array(9).fill(null))
   const [turn, setTurn] = useState('X') // 'X' = player, 'O' = AI
-  const [done, setDone] = useState(false)
+  const endedRef = useRef(false)
 
   const win = winner(board)
   const full = board.every(Boolean)
+  const done = Boolean(win) || full
 
-  // End detection.
+  // End detection — fire onGameOver exactly once. Using a ref (not effect deps)
+  // avoids the effect re-running and cancelling its own timeout.
   useEffect(() => {
-    if (done) return
+    if (endedRef.current) return
     if (win || full) {
-      setDone(true)
+      endedRef.current = true
       const score = win === 'X' ? 100 : win === 'O' ? 0 : 50
-      const t = setTimeout(() => onGameOver(score), 700)
+      const t = setTimeout(() => onGameOver(score), 800)
       return () => clearTimeout(t)
     }
-  }, [win, full, done, onGameOver])
+  }, [win, full, onGameOver])
 
   // AI plays when it's O's turn.
   useEffect(() => {
-    if (done || turn !== 'O' || win || full) return
+    if (done || turn !== 'O') return
     const t = setTimeout(() => {
       setBoard((prev) => {
         if (winner(prev) || prev.every(Boolean)) return prev
@@ -78,7 +80,7 @@ export default function TicTacToe({ onGameOver }) {
       setTurn('X')
     }, 400)
     return () => clearTimeout(t)
-  }, [turn, done, win, full])
+  }, [turn, done])
 
   function handleClick(i) {
     if (done || board[i] || turn !== 'X') return
