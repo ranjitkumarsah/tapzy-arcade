@@ -2,8 +2,15 @@ import { useApp } from './context/AppContext'
 
 // Phase 1: shows the real Telegram user, adopts Telegram's theme, and confirms
 // the SDK handshake. The launcher + games arrive in Phase 3.
+const AUTH_LABEL = {
+  loading: '⏳ Signing you in…',
+  authenticated: '🔐 Signed in to Firebase (scores will save)',
+  dev: '🧪 Dev mode — Firebase auth skipped',
+  error: '❌ Auth failed',
+}
+
 export default function App() {
-  const { insideTelegram, telegramUser } = useApp()
+  const { insideTelegram, telegramUser, authStatus, authError, uid } = useApp()
 
   const displayName = telegramUser
     ? [telegramUser.first_name, telegramUser.last_name].filter(Boolean).join(' ')
@@ -34,7 +41,17 @@ export default function App() {
           : '⚠️ Not running inside Telegram (showing a mock user for local dev).'}
       </div>
 
-      <p className="hint">Phase 1 complete. Next: Phase 2 wires Firebase auth.</p>
+      <div className={`status ${authStatus === 'error' ? 'warn' : 'ok'}`}>
+        {AUTH_LABEL[authStatus] || authStatus}
+        {authStatus === 'authenticated' && uid ? (
+          <div className="hint">uid: {uid}</div>
+        ) : null}
+        {authStatus === 'error' && authError ? (
+          <div className="hint">{authError}</div>
+        ) : null}
+      </div>
+
+      <p className="hint">Phase 2: Firebase auth wired. Next: Phase 3 games.</p>
     </main>
   )
 }

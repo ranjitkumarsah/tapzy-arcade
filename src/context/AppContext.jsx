@@ -5,30 +5,41 @@ import {
   getTelegramUser,
   isInsideTelegram,
 } from '../telegram/initTelegram'
+import { useTelegramAuth } from '../telegram/useTelegramAuth'
 
 // Global app state. Grows over the phases:
 //   Phase 1: telegramUser, initData, insideTelegram
-//   Phase 2: firebase auth user / auth status
+//   Phase 2: firebase auth user + auth status
 //   Phase 6: ad frequency counters
 const AppContext = createContext(null)
 
 export function AppProvider({ children }) {
-  const [telegramUser, setTelegramUser] = useState(null)
-  const [initData, setInitData] = useState('')
+  // initData/user are available synchronously from the injected SDK.
+  const [telegramUser] = useState(() => getTelegramUser())
+  const [initData] = useState(() => getInitData())
 
   useEffect(() => {
     initTelegram()
-    setTelegramUser(getTelegramUser())
-    setInitData(getInitData())
   }, [])
+
+  const { status: authStatus, firebaseUser, error: authError } = useTelegramAuth({
+    initData,
+    telegramUser,
+    insideTelegram: isInsideTelegram,
+  })
 
   const value = useMemo(
     () => ({
       insideTelegram: isInsideTelegram,
       telegramUser,
       initData,
+      authStatus,
+      firebaseUser,
+      authError,
+      // Convenient UID for score/leaderboard writes in later phases.
+      uid: firebaseUser?.uid ?? null,
     }),
-    [telegramUser, initData],
+    [telegramUser, initData, authStatus, firebaseUser, authError],
   )
 
   return <AppContext.Provider value={value}>{children}</AppContext.Provider>
