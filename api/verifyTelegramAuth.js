@@ -12,9 +12,7 @@ import crypto from 'node:crypto'
 import { initializeApp, getApps, cert } from 'firebase-admin/app'
 import { getAuth } from 'firebase-admin/auth'
 
-// Bump this string whenever this file changes so we can confirm from the client
-// which deployed version is actually running.
-const CODE_VERSION = 'v3-diagnostics'
+const CODE_VERSION = 'v4-multivariant'
 
 // Reuse the Admin app across warm invocations.
 function getAdminAuth() {
@@ -25,45 +23,102 @@ function getAdminAuth() {
   return getAuth()
 }
 
-// Telegram's verification spec:
-//   secret_key = HMAC_SHA256(key="WebAppData", msg=bot_token)
-//   check_hash = HMAC_SHA256(key=secret_key, msg=data_check_string)
-// where data_check_string is the sorted "key=value" lines (excluding `hash`).
-function verifyInitData(initData, botToken) {
-  const params = new URLSearchParams(initData)
-  const providedHash = params.get('hash')
-  if (!providedHash) return { ok: false, reason: 'missing_hash' }
-  // Both `hash` and the newer Ed25519 `signature` field must be excluded from
-  // the data-check-string (Telegram computes the HMAC over everything else).
-  params.delete('hash')
-  params.delete('signature')
+// --- data-check-string builders -------------------------------------------
+// Telegram signs the DECODED values, sorted by key, joined by \n, excluding
+// `hash` (and, on newer clients, `signature`). The disagreement between clients
+// and libraries is almost always in how the value is decoded, so we try several.
 
-  const dataCheckString = [...params.entries()]
-    .map(([key, value]) => `${key}=${value}`)
-    .sort()
+const DECODERS = {
+  // strict RFC 3986 — does NOT turn '+' into space (matches Node querystring)
+  uriComponent: (v) => {
+    try {
+      return decodeURIComponent(v)
+    } catch {
+      return v
+    }
+  },
+  // form semantics — '+' becomes space (matches URLSearchParams). This was the
+  // previous implementation and is the prime suspect.
+  formUrlencoded: (v) => {
+    try {
+      return decodeURIComponent(v.replace(/\+/g, '%20'))
+    } catch {
+      return v
+    }
+  },
+  // no decoding at all — use the raw percent-encoded value
+  raw: (v) => v,
+}
+
+function parseRawPairs(initData) {
+  return initData.split('&').map((kv) => {
+    const i = kv.indexOf('=')
+    return i === -1 ? [kv, ''] : [kv.slice(0, i), kv.slice(i + 1)]
+  })
+}
+
+function buildDataCheckString(pairs, { excludeSignature, decode }) {
+  return pairs
+    .filter(([k]) => k !== 'hash' && (!excludeSignature || k !== 'signature'))
+    .map(([k, v]) => [k, decode(v)])
+    .sort((a, b) => (a[0] < b[0] ? -1 : a[0] > b[0] ? 1 : 0))
+    .map(([k, v]) => `${k}=${v}`)
     .join('\n')
+}
 
+function computeHash(dataCheckString, botToken) {
   const secretKey = crypto.createHmac('sha256', 'WebAppData').update(botToken).digest()
-  const computedHash = crypto.createHmac('sha256', secretKey).update(dataCheckString).digest('hex')
+  return crypto.createHmac('sha256', secretKey).update(dataCheckString).digest('hex')
+}
 
-  // Safe diagnostics — no secrets. Helps pinpoint bad_hash causes remotely.
-  const diag = {
-    fieldKeys: [...params.keys()].sort(),
-    hadSignature: initData.includes('signature='),
-    computedPrefix: computedHash.slice(0, 6),
-    providedPrefix: providedHash.slice(0, 6),
-    botTokenLen: botToken.length,
-    botTokenTail: botToken.slice(-4),
+// The variants we attempt, in order of likelihood.
+const VARIANTS = [
+  { name: 'uriComponent_exclSig', decode: DECODERS.uriComponent, excludeSignature: true },
+  { name: 'uriComponent_inclSig', decode: DECODERS.uriComponent, excludeSignature: false },
+  { name: 'form_exclSig', decode: DECODERS.formUrlencoded, excludeSignature: true },
+  { name: 'form_inclSig', decode: DECODERS.formUrlencoded, excludeSignature: false },
+  { name: 'raw_exclSig', decode: DECODERS.raw, excludeSignature: true },
+  { name: 'raw_inclSig', decode: DECODERS.raw, excludeSignature: false },
+]
+
+function verifyInitData(initData, botToken) {
+  const pairs = parseRawPairs(initData)
+  const providedHash = pairs.find(([k]) => k === 'hash')?.[1]
+  if (!providedHash) return { ok: false, reason: 'missing_hash' }
+
+  const attempts = []
+  let matched = null
+
+  for (const variant of VARIANTS) {
+    const dcs = buildDataCheckString(pairs, variant)
+    const computed = computeHash(dcs, botToken)
+    const isMatch = computed.length === providedHash.length && computed === providedHash
+    attempts.push({ variant: variant.name, prefix: computed.slice(0, 6), match: isMatch })
+    if (isMatch && !matched) matched = variant
   }
 
-  const a = Buffer.from(computedHash, 'hex')
-  const b = Buffer.from(providedHash, 'hex')
-  if (a.length !== b.length || !crypto.timingSafeEqual(a, b)) {
-    return { ok: false, reason: 'bad_hash', diag }
+  if (!matched) {
+    return {
+      ok: false,
+      reason: 'bad_hash',
+      diag: {
+        fieldKeys: pairs.map(([k]) => k).sort(),
+        providedPrefix: providedHash.slice(0, 6),
+        botTokenLen: botToken.length,
+        botTokenTail: botToken.slice(-4),
+        attempts,
+        // The exact string being signed (uriComponent, excl. signature).
+        // Contains only your own Telegram user info + timestamps — never the token.
+        dcsSample: buildDataCheckString(pairs, {
+          excludeSignature: true,
+          decode: DECODERS.uriComponent,
+        }),
+      },
+    }
   }
 
   // Replay protection: reject data older than 24h.
-  const authDate = Number(params.get('auth_date'))
+  const authDate = Number(pairs.find(([k]) => k === 'auth_date')?.[1])
   const nowSeconds = Math.floor(Date.now() / 1000)
   if (!authDate || nowSeconds - authDate > 86400) {
     return { ok: false, reason: 'expired' }
@@ -71,13 +126,14 @@ function verifyInitData(initData, botToken) {
 
   let user
   try {
-    user = JSON.parse(params.get('user') || '{}')
+    const userRaw = pairs.find(([k]) => k === 'user')?.[1] || '%7B%7D'
+    user = JSON.parse(decodeURIComponent(userRaw))
   } catch {
     return { ok: false, reason: 'bad_user' }
   }
   if (!user?.id) return { ok: false, reason: 'no_user_id' }
 
-  return { ok: true, user }
+  return { ok: true, user, method: matched.name }
 }
 
 export default async function handler(req, res) {
@@ -114,6 +170,7 @@ export default async function handler(req, res) {
 
     return res.status(200).json({
       token,
+      method: result.method, // which construction matched (for our records)
       user: {
         id: result.user.id,
         first_name: result.user.first_name || '',
