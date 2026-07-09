@@ -263,6 +263,98 @@
   gap: 12px;
 }
 
+/* ---- Launcher profile button ---- */
+.launcher-profile-btn {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex: 1;
+  background: none;
+  border: none;
+  padding: 0;
+  cursor: pointer;
+  color: var(--text);
+  text-align: left;
+}
+
+/* ---- Profile ---- */
+.profile-modal {
+  max-width: 360px;
+  max-height: 82vh;
+  overflow-y: auto;
+  text-align: left;
+}
+.profile-head {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.profile-name {
+  font-size: 1.2rem;
+  font-weight: 800;
+}
+.profile-level {
+  color: var(--accent);
+  font-weight: 700;
+  font-size: 0.9rem;
+}
+.xp-bar {
+  height: 10px;
+  border-radius: 6px;
+  background: rgba(128, 128, 128, 0.25);
+  overflow: hidden;
+}
+.xp-bar span {
+  display: block;
+  height: 100%;
+  background: var(--accent);
+  border-radius: 6px;
+  transition: width 0.6s ease;
+}
+.xp-text {
+  font-size: 0.75rem;
+  color: var(--hint);
+  text-align: center;
+}
+.profile-stats {
+  display: flex;
+  gap: 8px;
+}
+.profile-stats .wallet-bal {
+  padding: 10px 6px;
+}
+.profile-stats .wallet-bal-num {
+  font-size: 1.3rem;
+}
+.badges-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 8px;
+}
+.badge {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 3px;
+  padding: 8px 4px;
+  border-radius: 12px;
+  background: var(--card);
+  opacity: 0.45;
+  text-align: center;
+}
+.badge.is-unlocked {
+  opacity: 1;
+  outline: 1px solid var(--accent);
+}
+.badge-icon {
+  font-size: 1.5rem;
+}
+.badge-label {
+  font-size: 0.6rem;
+  color: var(--hint);
+  line-height: 1.1;
+}
+
 /* ---- Buttons ---- */
 .btn {
   border: none;

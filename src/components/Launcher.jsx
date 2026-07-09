@@ -8,6 +8,7 @@ import CoinChip from './CoinChip'
 import WalletModal from './WalletModal'
 import DailyModal from './DailyModal'
 import InviteModal from './InviteModal'
+import ProfileModal from './ProfileModal'
 import { getDailyStatus } from '../economy/daily'
 import { syncReferral } from '../economy/referral'
 
@@ -19,6 +20,7 @@ export default function Launcher({ onSelect, onOpenLeaderboard }) {
   const [dailyOpen, setDailyOpen] = useState(false)
   const [daily, setDaily] = useState({ claimable: false, streak: 0 })
   const [inviteOpen, setInviteOpen] = useState(false)
+  const [profileOpen, setProfileOpen] = useState(false)
 
   const displayName = telegramUser?.first_name || 'Player'
 
@@ -61,17 +63,25 @@ export default function Launcher({ onSelect, onOpenLeaderboard }) {
   return (
     <div className="launcher">
       <header className="launcher-header">
-        {telegramUser?.photo_url ? (
-          <img className="avatar avatar--sm" src={telegramUser.photo_url} alt="" />
-        ) : (
-          <div className="avatar avatar--sm avatar--placeholder" aria-hidden="true">
-            {displayName.charAt(0)}
+        <button
+          className="launcher-profile-btn"
+          onClick={() => {
+            hapticImpact('light')
+            setProfileOpen(true)
+          }}
+        >
+          {telegramUser?.photo_url ? (
+            <img className="avatar avatar--sm" src={telegramUser.photo_url} alt="" />
+          ) : (
+            <div className="avatar avatar--sm avatar--placeholder" aria-hidden="true">
+              {displayName.charAt(0)}
+            </div>
+          )}
+          <div className="launcher-greeting">
+            <div className="launcher-hi">Hi, {displayName} 👋</div>
+            <div className="launcher-sub">View profile</div>
           </div>
-        )}
-        <div className="launcher-greeting">
-          <div className="launcher-hi">Hi, {displayName} 👋</div>
-          <div className="launcher-sub">Pick a game</div>
-        </div>
+        </button>
         <CoinChip onClick={() => setWalletOpen(true)} />
         <SoundToggle />
       </header>
@@ -139,6 +149,7 @@ export default function Launcher({ onSelect, onOpenLeaderboard }) {
         />
       ) : null}
       {inviteOpen ? <InviteModal onClose={() => setInviteOpen(false)} /> : null}
+      {profileOpen ? <ProfileModal onClose={() => setProfileOpen(false)} /> : null}
     </div>
   )
 }
