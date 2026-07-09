@@ -1,4 +1,12 @@
-import { createContext, useContext, useEffect, useMemo, useState } from 'react'
+import {
+  createContext,
+  useCallback,
+  useContext,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from 'react'
 import {
   initTelegram,
   getInitData,
@@ -6,6 +14,12 @@ import {
   isInsideTelegram,
 } from '../telegram/initTelegram'
 import { useTelegramAuth } from '../telegram/useTelegramAuth'
+import { initMonetag, showInterstitial } from '../ads/monetag'
+
+// Ad pacing rules (PRD): interstitial at most every Nth game, and never more
+// than once per few minutes.
+const INTERSTITIAL_EVERY = 3
+const MIN_MS_BETWEEN_ADS = 3 * 60 * 1000
 
 // Global app state. Grows over the phases:
 //   Phase 1: telegramUser, initData, insideTelegram
@@ -20,6 +34,22 @@ export function AppProvider({ children }) {
 
   useEffect(() => {
     initTelegram()
+    initMonetag() // preload ad SDK (no-op if not configured)
+  }, [])
+
+  // Frequency-capped interstitial. Call once per game finished; it decides
+  // whether an ad actually shows.
+  const gamesEndedRef = useRef(0)
+  const lastAdAtRef = useRef(0)
+  const maybeShowInterstitial = useCallback(async () => {
+    gamesEndedRef.current += 1
+    const now = Date.now()
+    const dueByCount = gamesEndedRef.current % INTERSTITIAL_EVERY === 0
+    const dueByTime = now - lastAdAtRef.current >= MIN_MS_BETWEEN_ADS
+    if (dueByCount && dueByTime) {
+      lastAdAtRef.current = now
+      await showInterstitial()
+    }
   }, [])
 
   const {
@@ -44,8 +74,17 @@ export function AppProvider({ children }) {
       authErrorDetail,
       // Convenient UID for score/leaderboard writes in later phases.
       uid: firebaseUser?.uid ?? null,
+      maybeShowInterstitial,
     }),
-    [telegramUser, initData, authStatus, firebaseUser, authError, authErrorDetail],
+    [
+      telegramUser,
+      initData,
+      authStatus,
+      firebaseUser,
+      authError,
+      authErrorDetail,
+      maybeShowInterstitial,
+    ],
   )
 
   return <AppContext.Provider value={value}>{children}</AppContext.Provider>

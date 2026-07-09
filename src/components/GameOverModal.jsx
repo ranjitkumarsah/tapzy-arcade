@@ -6,6 +6,8 @@ export default function GameOverModal({
   best,
   isRecord,
   rank,
+  canWatchAd,
+  onWatchAd,
   onRetry,
   onExit,
   onLeaderboard,
@@ -29,6 +31,11 @@ export default function GameOverModal({
         {rank ? <div className="best-line">🏆 Rank #{rank}</div> : null}
 
         <div className="modal-actions">
+          {canWatchAd ? (
+            <button className="btn btn-reward" onClick={onWatchAd}>
+              ▶️ Watch ad for bonus points
+            </button>
+          ) : null}
           <button className="btn btn-primary" onClick={onRetry}>
             🔄 Play again
           </button>

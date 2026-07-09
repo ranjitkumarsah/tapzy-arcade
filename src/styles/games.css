@@ -41,6 +41,10 @@
   background: var(--card);
   color: var(--text);
 }
+.btn-reward {
+  background: #3aa76d;
+  color: #fff;
+}
 .link-btn {
   background: none;
   border: none;

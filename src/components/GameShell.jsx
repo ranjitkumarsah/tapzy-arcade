@@ -3,18 +3,34 @@ import { useApp } from '../context/AppContext'
 import { showBackButton, hapticImpact, setVerticalSwipes } from '../telegram/initTelegram'
 import { saveScore } from '../firebase/scores'
 import { submitLeaderboardScore, getMyRank } from '../firebase/leaderboard'
+import { adsEnabled, showRewarded } from '../ads/monetag'
 import GameOverModal from './GameOverModal'
 
 // Wraps any game with a consistent interface. The game only needs to call
 // onGameOver(score); GameShell saves the score, shows the modal, and handles
 // retry + back-to-menu (including Telegram's native BackButton).
 export default function GameShell({ game, onExit, onOpenLeaderboard }) {
-  const { uid, telegramUser } = useApp()
+  const { uid, telegramUser, maybeShowInterstitial } = useApp()
   const [round, setRound] = useState(0) // bump to remount (retry)
-  const [result, setResult] = useState(null) // { score, best, isRecord, rank } | null
+  const [result, setResult] = useState(null) // { score, best, isRecord, rank, bonusClaimed } | null
 
   const displayName =
     telegramUser?.first_name || telegramUser?.username || 'Player'
+
+  // Persist a score to Firestore + leaderboard and compute rank. Reused by
+  // game-over and by the rewarded-ad bonus.
+  const persist = useCallback(
+    async (rawScore) => {
+      const { best, isRecord } = await saveScore(game.id, rawScore, uid)
+      let rank = null
+      if (uid) {
+        if (isRecord) await submitLeaderboardScore(game.id, best, displayName, uid)
+        rank = await getMyRank(game.id, uid)
+      }
+      return { score: Math.round(rawScore) || 0, best, isRecord, rank }
+    },
+    [game.id, uid, displayName],
+  )
 
   // Telegram BackButton returns to the launcher.
   useEffect(() => {
@@ -31,24 +47,33 @@ export default function GameShell({ game, onExit, onOpenLeaderboard }) {
   const handleGameOver = useCallback(
     async (rawScore) => {
       hapticImpact('medium')
-      const { best, isRecord } = await saveScore(game.id, rawScore, uid)
-
-      // Update the public leaderboard only when a personal best is beaten.
-      let rank = null
-      if (uid) {
-        if (isRecord) await submitLeaderboardScore(game.id, best, displayName, uid)
-        rank = await getMyRank(game.id, uid)
-      }
-
-      setResult({ score: Math.round(rawScore) || 0, best, isRecord, rank })
+      const r = await persist(rawScore)
+      setResult({ ...r, bonusClaimed: false })
     },
-    [game.id, uid, displayName],
+    [persist],
   )
 
-  const handleRetry = useCallback(() => {
+  const handleRetry = useCallback(async () => {
+    await maybeShowInterstitial() // frequency-capped; usually instant
     setResult(null)
     setRound((r) => r + 1)
-  }, [])
+  }, [maybeShowInterstitial])
+
+  const handleExitFromModal = useCallback(async () => {
+    await maybeShowInterstitial()
+    onExit()
+  }, [maybeShowInterstitial, onExit])
+
+  // Rewarded ad → grant a score bonus, then re-save/rank.
+  const handleWatchAd = useCallback(() => {
+    showRewarded(async () => {
+      setResult((prev) => (prev ? { ...prev, bonusClaimed: true } : prev))
+      const base = result?.score ?? 0
+      const bonus = base + Math.max(10, Math.round(base * 0.25))
+      const r = await persist(bonus)
+      setResult({ ...r, bonusClaimed: true })
+    })
+  }, [persist, result])
 
   const GameComponent = game.component
 
@@ -77,8 +102,10 @@ export default function GameShell({ game, onExit, onOpenLeaderboard }) {
           best={result.best}
           isRecord={result.isRecord}
           rank={result.rank}
+          canWatchAd={adsEnabled && !result.bonusClaimed}
+          onWatchAd={handleWatchAd}
           onRetry={handleRetry}
-          onExit={onExit}
+          onExit={handleExitFromModal}
           onLeaderboard={
             onOpenLeaderboard ? () => onOpenLeaderboard(game.id) : null
           }
