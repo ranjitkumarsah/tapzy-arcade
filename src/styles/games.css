@@ -322,6 +322,7 @@
   flex-direction: column;
   align-items: center;
   gap: 12px;
+  width: 100%;
 }
 .g2048-score {
   font-size: 1.1rem;
@@ -330,11 +331,12 @@
 .g2048-board {
   display: grid;
   grid-template-columns: repeat(4, 1fr);
-  gap: 8px;
+  gap: 10px;
   width: 100%;
-  max-width: 320px;
+  max-width: 360px;
   aspect-ratio: 1;
-  padding: 8px;
+  padding: 10px;
+  margin: 0 auto;
   background: rgba(128, 128, 128, 0.2);
   border-radius: 12px;
   touch-action: none; /* let swipes drive the game, not the page */
@@ -345,7 +347,8 @@
   justify-content: center;
   border-radius: 8px;
   font-weight: 800;
-  font-size: 1.5rem;
+  /* Scale with the board so tiles fill the cell on any screen. */
+  font-size: clamp(1.3rem, 8vw, 2.1rem);
   background: rgba(128, 128, 128, 0.12);
   color: #1c1a17;
 }
@@ -358,11 +361,11 @@
 .tile-16 { background: #f59563; color: #fff; }
 .tile-32 { background: #f67c5f; color: #fff; }
 .tile-64 { background: #f65e3b; color: #fff; }
-.tile-128 { background: #edcf72; color: #fff; font-size: 1.3rem; }
-.tile-256 { background: #edcc61; color: #fff; font-size: 1.3rem; }
-.tile-512 { background: #edc850; color: #fff; font-size: 1.3rem; }
-.tile-1024 { background: #edc53f; color: #fff; font-size: 1.1rem; }
-.tile-2048 { background: #edc22e; color: #fff; font-size: 1.1rem; }
+.tile-128 { background: #edcf72; color: #fff; font-size: clamp(1.1rem, 6.5vw, 1.7rem); }
+.tile-256 { background: #edcc61; color: #fff; font-size: clamp(1.1rem, 6.5vw, 1.7rem); }
+.tile-512 { background: #edc850; color: #fff; font-size: clamp(1.1rem, 6.5vw, 1.7rem); }
+.tile-1024 { background: #edc53f; color: #fff; font-size: clamp(0.9rem, 5.2vw, 1.4rem); }
+.tile-2048 { background: #edc22e; color: #fff; font-size: clamp(0.9rem, 5.2vw, 1.4rem); }
 .g2048-hint,
 .canvas-hint {
   font-size: 0.78rem;
