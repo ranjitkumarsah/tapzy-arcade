@@ -114,3 +114,14 @@ export function showBackButton(handler) {
 export function hapticImpact(style = 'light') {
   webApp?.HapticFeedback?.impactOccurred?.(style)
 }
+
+// Disable Telegram's vertical swipe-to-close during gameplay (Bot API 7.7+),
+// so swipes/taps go to the game instead of accidentally closing the app.
+export function setVerticalSwipes(enabled) {
+  try {
+    if (enabled) webApp?.enableVerticalSwipes?.()
+    else webApp?.disableVerticalSwipes?.()
+  } catch {
+    /* older clients: no-op */
+  }
+}

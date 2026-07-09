@@ -315,3 +315,81 @@
   background: #ec6b56;
   color: #fff;
 }
+
+/* ---- 2048 ---- */
+.g2048 {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+}
+.g2048-score {
+  font-size: 1.1rem;
+  font-weight: 700;
+}
+.g2048-board {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 8px;
+  width: 100%;
+  max-width: 320px;
+  aspect-ratio: 1;
+  padding: 8px;
+  background: rgba(128, 128, 128, 0.2);
+  border-radius: 12px;
+  touch-action: none; /* let swipes drive the game, not the page */
+}
+.g2048-tile {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 8px;
+  font-weight: 800;
+  font-size: 1.5rem;
+  background: rgba(128, 128, 128, 0.12);
+  color: #1c1a17;
+}
+.g2048-tile.tile-0 {
+  color: transparent;
+}
+.tile-2 { background: #eee4da; }
+.tile-4 { background: #ede0c8; }
+.tile-8 { background: #f2b179; color: #fff; }
+.tile-16 { background: #f59563; color: #fff; }
+.tile-32 { background: #f67c5f; color: #fff; }
+.tile-64 { background: #f65e3b; color: #fff; }
+.tile-128 { background: #edcf72; color: #fff; font-size: 1.3rem; }
+.tile-256 { background: #edcc61; color: #fff; font-size: 1.3rem; }
+.tile-512 { background: #edc850; color: #fff; font-size: 1.3rem; }
+.tile-1024 { background: #edc53f; color: #fff; font-size: 1.1rem; }
+.tile-2048 { background: #edc22e; color: #fff; font-size: 1.1rem; }
+.g2048-hint,
+.canvas-hint {
+  font-size: 0.78rem;
+  color: var(--hint);
+}
+
+/* ---- Canvas games (Snake, Flappy) ---- */
+.canvas-wrap {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+}
+.canvas-score {
+  font-size: 1.1rem;
+  font-weight: 700;
+}
+.game-canvas {
+  width: 100%;
+  max-width: 340px;
+  aspect-ratio: 1 / 1;
+  border-radius: 12px;
+  display: block;
+  touch-action: none;
+}
+.game-canvas--tall {
+  aspect-ratio: 3 / 4;
+  max-width: 320px;
+}

@@ -27,6 +27,27 @@ export const GAMES = [
     scoreLabel: 'Best',
     component: lazy(() => import('./Quiz/Quiz.jsx')),
   },
+  {
+    id: '2048',
+    title: '2048',
+    icon: '🔢',
+    scoreLabel: 'Best',
+    component: lazy(() => import('./Game2048/Game2048.jsx')),
+  },
+  {
+    id: 'snake',
+    title: 'Snake',
+    icon: '🐍',
+    scoreLabel: 'Best',
+    component: lazy(() => import('./Snake/Snake.jsx')),
+  },
+  {
+    id: 'flappy',
+    title: 'Flappy',
+    icon: '🐤',
+    scoreLabel: 'Best',
+    component: lazy(() => import('./FlappyClone/FlappyClone.jsx')),
+  },
 ]
 
 export function getGame(id) {

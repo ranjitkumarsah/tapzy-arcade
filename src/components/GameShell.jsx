@@ -1,6 +1,6 @@
 import { Suspense, useCallback, useEffect, useState } from 'react'
 import { useApp } from '../context/AppContext'
-import { showBackButton, hapticImpact } from '../telegram/initTelegram'
+import { showBackButton, hapticImpact, setVerticalSwipes } from '../telegram/initTelegram'
 import { saveScore } from '../firebase/scores'
 import GameOverModal from './GameOverModal'
 
@@ -17,6 +17,12 @@ export default function GameShell({ game, onExit }) {
     const cleanup = showBackButton(onExit)
     return cleanup
   }, [onExit])
+
+  // Prevent pull-to-close from stealing swipes/taps while a game is open.
+  useEffect(() => {
+    setVerticalSwipes(false)
+    return () => setVerticalSwipes(true)
+  }, [])
 
   const handleGameOver = useCallback(
     async (rawScore) => {
