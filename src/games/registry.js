@@ -78,6 +78,13 @@ export const GAMES = [
     scoreLabel: 'Best',
     component: lazy(() => import('./ColorMatch/ColorMatch.jsx')),
   },
+  {
+    id: 'bubble',
+    title: 'Bubble Shooter',
+    icon: '🫧',
+    scoreLabel: 'Best',
+    component: lazy(() => import('./BubbleShooter/BubbleShooter.jsx')),
+  },
 ]
 
 export function getGame(id) {

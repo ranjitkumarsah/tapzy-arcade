@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from 'react'
 import { playBlip } from '../../sound/sound'
 
-const GRID = 17 // cells per side
+const GRID = 15 // fewer, bigger cells = clearer and easier to control
 
 export default function Snake({ onGameOver, initialScore = 0 }) {
   const canvasRef = useRef(null)
@@ -11,8 +11,6 @@ export default function Snake({ onGameOver, initialScore = 0 }) {
   useEffect(() => {
     const canvas = canvasRef.current
     const ctx = canvas.getContext('2d')
-
-    // Crisp sizing for the device pixel ratio.
     const cssSize = canvas.clientWidth
     const dpr = window.devicePixelRatio || 1
     canvas.width = cssSize * dpr
@@ -20,12 +18,22 @@ export default function Snake({ onGameOver, initialScore = 0 }) {
     ctx.scale(dpr, dpr)
     const cell = cssSize / GRID
 
+    const styles = getComputedStyle(document.documentElement)
+    const accent = styles.getPropertyValue('--accent').trim() || '#5eb5f7'
+    const cardColor = styles.getPropertyValue('--card').trim() || '#22303c'
+    const bg = styles.getPropertyValue('--bg').trim() || '#17212b'
+    const foodColor = '#ec6b56'
+
     const rand = (n) => Math.floor(Math.random() * n)
-    let snake = [{ x: 8, y: 8 }]
+    let snake = [
+      { x: 7, y: 7 },
+      { x: 6, y: 7 },
+      { x: 5, y: 7 },
+    ]
     let dir = { x: 1, y: 0 }
-    let nextDir = { x: 1, y: 0 }
+    const queue = [] // buffered turns (apply one per tick)
     let localScore = initialScore
-    let step = 135 // ms per move
+    let step = 160 // ms/move — starts gentle
     let acc = 0
     let last = performance.now()
     let raf = 0
@@ -39,15 +47,13 @@ export default function Snake({ onGameOver, initialScore = 0 }) {
     }
     let food = spawnFood()
 
-    // Theme-aware colors pulled from CSS variables.
-    const styles = getComputedStyle(document.documentElement)
-    const accent = styles.getPropertyValue('--accent').trim() || '#5eb5f7'
-    const cardColor = styles.getPropertyValue('--card').trim() || '#22303c'
-    const foodColor = '#ec6b56'
-
-    function setDir(d) {
-      if (d.x === -dir.x && d.y === -dir.y) return // no reversing
-      nextDir = d
+    // Buffer up to 2 turns; reject reversals and duplicates relative to the
+    // last *queued* direction so quick double-taps register correctly.
+    function enqueue(d) {
+      const ref = queue.length ? queue[queue.length - 1] : dir
+      if (d.x === -ref.x && d.y === -ref.y) return
+      if (d.x === ref.x && d.y === ref.y) return
+      if (queue.length < 2) queue.push(d)
     }
 
     function end() {
@@ -58,7 +64,7 @@ export default function Snake({ onGameOver, initialScore = 0 }) {
     }
 
     function update() {
-      dir = nextDir
+      if (queue.length) dir = queue.shift()
       const head = { x: snake[0].x + dir.x, y: snake[0].y + dir.y }
       if (
         head.x < 0 ||
@@ -76,23 +82,76 @@ export default function Snake({ onGameOver, initialScore = 0 }) {
         setScore(localScore)
         playBlip(true)
         food = spawnFood()
-        step = Math.max(70, 135 - localScore * 3) // speed up gradually
+        step = Math.max(90, 160 - localScore * 2)
       } else {
         snake.pop()
       }
     }
 
+    function roundRect(x, y, w, h, r) {
+      if (ctx.roundRect) {
+        ctx.beginPath()
+        ctx.roundRect(x, y, w, h, r)
+        ctx.fill()
+      } else {
+        ctx.fillRect(x, y, w, h)
+      }
+    }
+
     function draw() {
-      ctx.fillStyle = cardColor
-      ctx.fillRect(0, 0, cssSize, cssSize)
-      // food
-      ctx.fillStyle = foodColor
-      ctx.fillRect(food.x * cell + 2, food.y * cell + 2, cell - 4, cell - 4)
-      // snake
+      // Checkerboard board.
+      for (let y = 0; y < GRID; y++) {
+        for (let x = 0; x < GRID; x++) {
+          ctx.fillStyle = (x + y) % 2 === 0 ? cardColor : bg
+          ctx.fillRect(x * cell, y * cell, cell, cell)
+        }
+      }
+      // Food — glossy apple.
+      const fx = food.x * cell + cell / 2
+      const fy = food.y * cell + cell / 2
+      const grad = ctx.createRadialGradient(
+        fx - cell * 0.15,
+        fy - cell * 0.15,
+        cell * 0.1,
+        fx,
+        fy,
+        cell * 0.5,
+      )
+      grad.addColorStop(0, '#ff9b8a')
+      grad.addColorStop(1, foodColor)
+      ctx.fillStyle = grad
+      ctx.beginPath()
+      ctx.arc(fx, fy, cell * 0.38, 0, Math.PI * 2)
+      ctx.fill()
+
+      // Snake — rounded, shaded segments.
       snake.forEach((s, i) => {
-        ctx.fillStyle = i === 0 ? accent : accent + 'cc'
-        ctx.fillRect(s.x * cell + 1, s.y * cell + 1, cell - 2, cell - 2)
+        const px = s.x * cell
+        const py = s.y * cell
+        const inset = cell * 0.08
+        const g = ctx.createLinearGradient(px, py, px, py + cell)
+        g.addColorStop(0, accent)
+        g.addColorStop(1, accent + 'cc')
+        ctx.fillStyle = i === 0 ? '#ffffff' : g
+        if (i === 0) ctx.fillStyle = accent
+        roundRect(px + inset, py + inset, cell - inset * 2, cell - inset * 2, cell * 0.28)
       })
+
+      // Eyes on the head.
+      const h = snake[0]
+      const hx = h.x * cell + cell / 2
+      const hy = h.y * cell + cell / 2
+      const off = cell * 0.18
+      const ex = dir.x * off
+      const ey = dir.y * off
+      const perpX = dir.y * off
+      const perpY = dir.x * off
+      ctx.fillStyle = '#fff'
+      for (const sgn of [-1, 1]) {
+        ctx.beginPath()
+        ctx.arc(hx + ex + sgn * perpX, hy + ey + sgn * perpY, cell * 0.09, 0, Math.PI * 2)
+        ctx.fill()
+      }
     }
 
     function loop(now) {
@@ -109,7 +168,6 @@ export default function Snake({ onGameOver, initialScore = 0 }) {
       }
     }
 
-    // --- controls ---
     const keyMap = {
       ArrowUp: { x: 0, y: -1 },
       ArrowDown: { x: 0, y: 1 },
@@ -119,7 +177,7 @@ export default function Snake({ onGameOver, initialScore = 0 }) {
     const onKey = (e) => {
       if (keyMap[e.key]) {
         e.preventDefault()
-        setDir(keyMap[e.key])
+        enqueue(keyMap[e.key])
       }
     }
     let ts = null
@@ -127,29 +185,29 @@ export default function Snake({ onGameOver, initialScore = 0 }) {
       const t = e.touches[0]
       ts = { x: t.clientX, y: t.clientY }
     }
-    const onTouchEnd = (e) => {
+    const onTouchMove = (e) => {
+      // Continuous swipe: turn as soon as a clear direction emerges.
       if (!ts) return
-      const t = e.changedTouches[0]
+      const t = e.touches[0]
       const dx = t.clientX - ts.x
       const dy = t.clientY - ts.y
-      ts = null
-      if (Math.max(Math.abs(dx), Math.abs(dy)) < 18) return
-      if (Math.abs(dx) > Math.abs(dy)) setDir({ x: dx > 0 ? 1 : -1, y: 0 })
-      else setDir({ x: 0, y: dy > 0 ? 1 : -1 })
+      if (Math.max(Math.abs(dx), Math.abs(dy)) < 22) return
+      if (Math.abs(dx) > Math.abs(dy)) enqueue({ x: dx > 0 ? 1 : -1, y: 0 })
+      else enqueue({ x: 0, y: dy > 0 ? 1 : -1 })
+      ts = { x: t.clientX, y: t.clientY } // reset origin for the next turn
     }
     window.addEventListener('keydown', onKey)
     canvas.addEventListener('touchstart', onTouchStart, { passive: true })
-    canvas.addEventListener('touchend', onTouchEnd, { passive: true })
+    canvas.addEventListener('touchmove', onTouchMove, { passive: true })
 
     raf = requestAnimationFrame(loop)
-
     return () => {
       cancelAnimationFrame(raf)
       window.removeEventListener('keydown', onKey)
       canvas.removeEventListener('touchstart', onTouchStart)
-      canvas.removeEventListener('touchend', onTouchEnd)
+      canvas.removeEventListener('touchmove', onTouchMove)
     }
-  }, [onGameOver])
+  }, [onGameOver, initialScore])
 
   return (
     <div className="canvas-wrap">

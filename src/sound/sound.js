@@ -90,6 +90,7 @@ const TRACKS = {
   whack: { tempo: 0.2, wave: 'square', notes: [392, 523, 392, 494, 440, 392] },
   simon: { tempo: 0.4, wave: 'triangle', notes: [330, 392, 494] },
   colormatch: { tempo: 0.26, wave: 'square', notes: [523, 440, 349, 440] },
+  bubble: { tempo: 0.3, wave: 'triangle', notes: [440, 523, 659, 523] },
 }
 
 let musicTimer = null
