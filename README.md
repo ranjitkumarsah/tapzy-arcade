@@ -1,34 +1,114 @@
-# Tapzy Arcade
+# 🎮 Tapzy Arcade — Telegram Mini-Games Hub
 
-A Telegram Mini App hosting a hub of casual mini-games (Tic-Tac-Toe, Memory Match, Quiz, 2048, Snake, Flappy-clone). React + Vite frontend, Firebase (Firestore + Auth) backend, Monetag ads. 100% free stack, no credit card required.
+A production-ready **Telegram Mini App**: 11 casual games in one launcher, a full
+**watch-to-earn coin economy** (withdrawable), daily rewards, referrals, profiles,
+**Telegram Stars** payments, and ads — all on a **$0, no-credit-card** stack.
 
-- Product/tech specs: [`docs/`](docs/)
-- Build plan (phase by phase): [`docs/implementation/IMPLEMENTATION-PLAN.md`](docs/implementation/IMPLEMENTATION-PLAN.md)
+- **Live:** [`t.me/TapzyArcadeBot/arcade`](https://t.me/TapzyArcadeBot/arcade)
+- **Sales one-pager:** [`docs/PITCH.md`](docs/PITCH.md)
+- **Go-live checklist:** [`docs/GO-LIVE-CHECKLIST.md`](docs/GO-LIVE-CHECKLIST.md)
+- **Specs & build plan:** [`docs/`](docs/) · [`docs/implementation/`](docs/implementation/)
 
-## Local development
+---
+
+## ✨ Features
+
+**11 games** (all lazy-loaded, touch-first, leaderboard-ready): Tic-Tac-Toe · Memory
+Match · Quiz · 2048 · Snake · Flappy · Reaction · Whack-a-Mole · Simon · Color Match ·
+Bubble Shooter.
+
+- **Zero-friction auth** — auto sign-in via Telegram `initData` → Firebase custom token (no signup)
+- **Per-game leaderboards** + personal-best tracking
+- **Coin economy** — earn **withdrawable** coins from verified ad watches (server-authoritative, idempotent ledger); spend on perks (Continue/revive)
+- **Daily spin-the-wheel + streaks**, **referrals** (invite → both earn), **profile** with XP/levels/badges
+- **Telegram Stars** — Remove Ads, coin packs, premium theme (server-verified entitlements)
+- **Withdrawals** — real cash-out in safe manual-approval mode (pool accounting, clawback)
+- **Ads** — Monetag rewarded + interstitial, frequency-capped, S2S reward postback
+- **Polish** — animated splash, confetti, count-ups, synthesized per-game music + haptics, light/dark theme, reduced-motion
+
+---
+
+## 🧱 Tech stack
+
+| Layer | Choice |
+|---|---|
+| Frontend | React 18 + Vite (lazy-loaded games, code-split vendors) |
+| Backend | Vercel Serverless Functions (`/api`, free Hobby) |
+| Data/Auth | Firebase Firestore + Auth (free Spark) |
+| Ads | Monetag (rewarded + interstitial, S2S postback) |
+| Payments | Telegram Stars (Bot Payments API, `XTR`) |
+| Audio | Web Audio API (synthesized — zero binary assets) |
+| Tests | Vitest |
+
+No paid services, no credit card. See [`docs/GO-LIVE-CHECKLIST.md`](docs/GO-LIVE-CHECKLIST.md).
+
+---
+
+## 📁 Structure
+
+```
+├── api/                      # Vercel serverless functions (10)
+│   ├── verifyTelegramAuth.js #   Telegram initData -> Firebase custom token
+│   ├── botPhoto.js           #   bot avatar for the splash
+│   ├── adReward.js           #   Monetag S2S -> credit withdrawable coins
+│   ├── spend.js              #   spend coins on perks
+│   ├── claimDaily.js         #   daily spin + streaks
+│   ├── referral.js           #   referral register + reward
+│   ├── stars/                #   Telegram Stars invoice + webhook
+│   └── withdraw/             #   withdrawal request + owner admin
+├── server/                   # shared server libs (Admin SDK, economy, config)
+├── src/
+│   ├── games/                # 11 self-contained games (+ pure logic modules)
+│   ├── components/           # launcher, GameShell, modals (wallet/store/daily/…)
+│   ├── economy/              # wallet, spend, daily, referral, stars, withdraw
+│   ├── telegram/             # WebApp SDK integration + auth hook
+│   ├── ads/ · sound/ · profile/ · theme/ · context/ · styles/
+├── firestore.rules           # security rules (money = server-write only)
+└── docs/                     # PRD, TRD, phase plans, pitch, go-live checklist
+```
+
+**Data model (Firestore):** `users`, `scores`, `leaderboard`, `wallets`, `ledger`,
+`streaks`, `referrals`, `profiles`, `withdrawals`, `purchases`, `rewardPool`,
+`adCounters`. All money collections are **server-write-only** (Admin SDK); clients read.
+
+---
+
+## 🔒 Security model
+
+- Real-money coins are **never** credited client-side. Only serverless functions (Admin
+  SDK) write `wallets`/`ledger`; Firestore rules make them read-only to clients.
+- Ad rewards require Monetag's **server-to-server postback** (users can't self-credit).
+- All credits/debits are **atomic** (transactions), **idempotent** (dedup keys), and
+  **double-entry logged**. Spends/Stars/withdrawals verify the caller's Firebase ID token.
+
+---
+
+## 🚀 Local development
 
 ```bash
 npm install
-npm run dev        # http://localhost:5173  (also served on your LAN IP for phone testing)
+npm run dev       # http://localhost:5173 (also on your LAN IP for phone testing)
+npm test          # Vitest
+npm run build     # -> dist/
 ```
 
-Outside Telegram you'll see a "Not running inside Telegram" notice — that's expected. Open the app through your bot to test the Telegram integration.
+Outside Telegram the app runs in a dev mode (mock user, no ads/economy). Open it through
+your bot to exercise the full Telegram integration.
 
-## Build
+## Environment & deploy
 
-```bash
-npm run build      # outputs to dist/
-npm run preview    # serve the production build locally
-```
+Copy `.env.example` → `.env`. Public `VITE_*` config goes in the client; secrets
+(`TELEGRAM_BOT_TOKEN`, `FIREBASE_SERVICE_ACCOUNT`, `AD_POSTBACK_SECRET`,
+`STARS_WEBHOOK_SECRET`, `ADMIN_SECRET`) go **only** in the Vercel dashboard — never the
+repo. Push to `main` → Vercel auto-deploys frontend + `/api`. Firestore rules deploy via
+console paste or `firebase deploy --only firestore:rules`.
 
-## Environment variables
+Full step-by-step: **[`docs/GO-LIVE-CHECKLIST.md`](docs/GO-LIVE-CHECKLIST.md)**.
 
-Copy `.env.example` to `.env` and fill values as each phase needs them (Firebase in Phase 2, Monetag in Phase 6). Server-side secrets (`TELEGRAM_BOT_TOKEN`, `FIREBASE_SERVICE_ACCOUNT`) are set **only** in the Vercel dashboard — never in the repo.
-
-## Deployment
-
-Auto-deploys to Vercel on every push to `main` (free Hobby tier, HTTPS). The Telegram auth function lives in `api/` as a Vercel serverless function (added in Phase 2).
+---
 
 ## Status
 
-**Phase 0** — project skeleton + bot registration. See the implementation plan for what's next.
+**Complete** — v1 (games + auth + leaderboards + ads) and v2 (economy, daily, referrals,
+profile, Stars, withdrawals, +5 games, visual polish) are all code-complete. Remaining
+work is operational (secrets, rules publish, webhook, BotFather, QA) per the checklist.
