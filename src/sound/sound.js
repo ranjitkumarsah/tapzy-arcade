@@ -86,6 +86,10 @@ const TRACKS = {
   '2048': { tempo: 0.3, wave: 'square', notes: [262, 392, 330, 494] },
   snake: { tempo: 0.22, wave: 'square', notes: [330, 415, 494, 415, 392, 330] },
   flappy: { tempo: 0.24, wave: 'triangle', notes: [392, 494, 587, 494] },
+  reaction: { tempo: 0.36, wave: 'triangle', notes: [440, 554, 440, 330] },
+  whack: { tempo: 0.2, wave: 'square', notes: [392, 523, 392, 494, 440, 392] },
+  simon: { tempo: 0.4, wave: 'triangle', notes: [330, 392, 494] },
+  colormatch: { tempo: 0.26, wave: 'square', notes: [523, 440, 349, 440] },
 }
 
 let musicTimer = null

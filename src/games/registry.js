@@ -50,6 +50,34 @@ export const GAMES = [
     canContinue: true, // revive keeping score
     component: lazy(() => import('./FlappyClone/FlappyClone.jsx')),
   },
+  {
+    id: 'reaction',
+    title: 'Reaction',
+    icon: '⚡',
+    scoreLabel: 'Best',
+    component: lazy(() => import('./ReactionTest/ReactionTest.jsx')),
+  },
+  {
+    id: 'whack',
+    title: 'Whack-a-Mole',
+    icon: '🔨',
+    scoreLabel: 'Best',
+    component: lazy(() => import('./WhackAMole/WhackAMole.jsx')),
+  },
+  {
+    id: 'simon',
+    title: 'Simon',
+    icon: '🎵',
+    scoreLabel: 'Best',
+    component: lazy(() => import('./Simon/Simon.jsx')),
+  },
+  {
+    id: 'colormatch',
+    title: 'Color Match',
+    icon: '🎨',
+    scoreLabel: 'Best',
+    component: lazy(() => import('./ColorMatch/ColorMatch.jsx')),
+  },
 ]
 
 export function getGame(id) {

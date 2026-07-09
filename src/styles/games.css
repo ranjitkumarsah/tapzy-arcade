@@ -847,6 +847,85 @@
   max-width: 320px;
 }
 
+/* ---- Reaction Test ---- */
+.reaction {
+  width: 100%;
+  min-height: 320px;
+  border-radius: 16px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  cursor: pointer;
+  user-select: none;
+  color: #fff;
+  transition: background 0.15s ease;
+}
+.reaction--idle,
+.reaction--result { background: var(--card); color: var(--text); }
+.reaction--waiting,
+.reaction--early { background: #ec6b56; }
+.reaction--go { background: #3aa76d; }
+.reaction--done { background: var(--card); color: var(--text); }
+.reaction-text { font-size: 2rem; font-weight: 800; }
+.reaction-round,
+.reaction-score { font-size: 0.9rem; opacity: 0.9; }
+
+/* ---- Whack-a-Mole ---- */
+.whack { display: flex; flex-direction: column; align-items: center; gap: 12px; width: 100%; }
+.whack-stats { display: flex; gap: 20px; color: var(--hint); font-weight: 700; }
+.whack-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 10px;
+  width: 100%;
+  max-width: 320px;
+}
+.whack-hole {
+  aspect-ratio: 1;
+  border: none;
+  border-radius: 50%;
+  background: rgba(128, 128, 128, 0.2);
+  font-size: 2rem;
+  cursor: pointer;
+  transition: transform 0.06s ease;
+}
+.whack-hole.is-up { background: #8b5a2b33; transform: scale(1.04); }
+.whack-hole:active { transform: scale(0.94); }
+
+/* ---- Simon ---- */
+.simon { display: flex; flex-direction: column; align-items: center; gap: 12px; }
+.simon-status { font-weight: 700; min-height: 1.3em; }
+.simon-level { color: var(--hint); font-size: 0.9rem; }
+.simon-pads {
+  display: grid;
+  grid-template-columns: repeat(2, 100px);
+  grid-template-rows: repeat(2, 100px);
+  gap: 10px;
+}
+.simon-pad {
+  border: none;
+  border-radius: 14px;
+  cursor: pointer;
+  opacity: 0.55;
+  transition: opacity 0.1s ease, transform 0.06s ease;
+}
+.simon-pad.is-lit { opacity: 1; transform: scale(1.05); }
+.simon-pad:active { transform: scale(0.97); }
+.pad-green { background: #3aa76d; }
+.pad-red { background: #ec6b56; }
+.pad-yellow { background: #edc850; }
+.pad-blue { background: #5eb5f7; }
+
+/* ---- Color Match ---- */
+.colormatch { display: flex; flex-direction: column; align-items: center; gap: 16px; width: 100%; max-width: 360px; }
+.cm-stats { display: flex; gap: 16px; color: var(--hint); font-size: 0.9rem; }
+.cm-word { font-size: 3rem; font-weight: 900; letter-spacing: 0.04em; }
+.cm-prompt { color: var(--hint); }
+.cm-buttons { display: flex; gap: 12px; width: 100%; }
+.cm-buttons .btn { flex: 1; }
+
 /* ---- Leaderboard ---- */
 .lb-open-btn {
   width: 100%;
