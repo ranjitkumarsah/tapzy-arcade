@@ -39,5 +39,11 @@ service cloud.firestore {
     match /adCounters/{docId} {
       allow read, write: if false;
     }
+
+    // Daily streak state — owner reads; server (Admin) writes.
+    match /streaks/{uid} {
+      allow read: if request.auth != null && request.auth.uid == uid;
+      allow write: if false;
+    }
   }
 }
