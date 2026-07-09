@@ -5,8 +5,6 @@ A production-ready **Telegram Mini App**: 11 casual games in one launcher, a ful
 **Telegram Stars** payments, and ads — all on a **$0, no-credit-card** stack.
 
 - **Live:** [`t.me/TapzyArcadeBot/arcade`](https://t.me/TapzyArcadeBot/arcade)
-- **Sales one-pager:** [`docs/PITCH.md`](docs/PITCH.md)
-- **Go-live checklist:** [`docs/GO-LIVE-CHECKLIST.md`](docs/GO-LIVE-CHECKLIST.md)
 - **Specs & build plan:** [`docs/`](docs/) · [`docs/implementation/`](docs/implementation/)
 
 ---
@@ -40,7 +38,7 @@ Bubble Shooter.
 | Audio | Web Audio API (synthesized — zero binary assets) |
 | Tests | Vitest |
 
-No paid services, no credit card. See [`docs/GO-LIVE-CHECKLIST.md`](docs/GO-LIVE-CHECKLIST.md).
+No paid services, no credit card.
 
 ---
 
@@ -64,7 +62,7 @@ No paid services, no credit card. See [`docs/GO-LIVE-CHECKLIST.md`](docs/GO-LIVE
 │   ├── telegram/             # WebApp SDK integration + auth hook
 │   ├── ads/ · sound/ · profile/ · theme/ · context/ · styles/
 ├── firestore.rules           # security rules (money = server-write only)
-└── docs/                     # PRD, TRD, phase plans, pitch, go-live checklist
+└── docs/                     # PRD, TRD, phased build plans
 ```
 
 **Data model (Firestore):** `users`, `scores`, `leaderboard`, `wallets`, `ledger`,
@@ -102,8 +100,6 @@ Copy `.env.example` → `.env`. Public `VITE_*` config goes in the client; secre
 `STARS_WEBHOOK_SECRET`, `ADMIN_SECRET`) go **only** in the Vercel dashboard — never the
 repo. Push to `main` → Vercel auto-deploys frontend + `/api`. Firestore rules deploy via
 console paste or `firebase deploy --only firestore:rules`.
-
-Full step-by-step: **[`docs/GO-LIVE-CHECKLIST.md`](docs/GO-LIVE-CHECKLIST.md)**.
 
 ---
 
