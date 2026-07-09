@@ -5,6 +5,62 @@
   flex-direction: column;
 }
 
+/* Entrance animation for each top-level view. */
+.launcher,
+.game-shell,
+.leaderboard {
+  animation: view-in 0.28s ease both;
+}
+@keyframes view-in {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Confetti overlay (above modals). */
+.confetti-canvas {
+  position: fixed;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  z-index: 60;
+}
+
+/* Coin chip pulse when the balance goes up. */
+.coin-chip.bump {
+  animation: chip-bump 0.5s ease;
+}
+@keyframes chip-bump {
+  0% { transform: scale(1); }
+  35% { transform: scale(1.28); color: var(--accent); }
+  100% { transform: scale(1); }
+}
+
+/* Record badge pop. */
+.record-badge.pop {
+  animation: pop-in 0.4s cubic-bezier(0.2, 0.9, 0.3, 1.4) both;
+}
+@keyframes pop-in {
+  from { transform: scale(0.4); opacity: 0; }
+  to { transform: scale(1); opacity: 1; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+  }
+}
+
 .app-loading {
   min-height: var(--tg-viewport-stable-height, 100vh);
   display: flex;
@@ -427,13 +483,28 @@
   padding: 20px 12px;
   border: none;
   border-radius: 16px;
-  background: var(--card);
+  background: var(--card); /* fallback if color-mix unsupported */
+  background:
+    linear-gradient(180deg, color-mix(in srgb, var(--accent) 12%, var(--card)), var(--card));
   color: var(--text);
   cursor: pointer;
-  transition: transform 0.08s ease;
+  transition: transform 0.08s ease, box-shadow 0.2s ease;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.12);
+  animation: card-in 0.4s ease both;
 }
 .game-card:active {
-  transform: scale(0.96);
+  transform: scale(0.95);
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.16);
+}
+@keyframes card-in {
+  from {
+    opacity: 0;
+    transform: translateY(10px) scale(0.98);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
 }
 .game-card-icon {
   font-size: 2.4rem;
@@ -521,6 +592,24 @@
   display: flex;
   flex-direction: column;
   gap: 14px;
+  animation: modal-in 0.24s ease both;
+}
+@keyframes modal-in {
+  from {
+    opacity: 0;
+    transform: translateY(12px) scale(0.96);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+.modal-backdrop {
+  animation: backdrop-in 0.2s ease both;
+}
+@keyframes backdrop-in {
+  from { opacity: 0; }
+  to { opacity: 1; }
 }
 .modal h2 {
   margin: 0;

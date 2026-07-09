@@ -87,10 +87,11 @@ export default function Launcher({ onSelect, onOpenLeaderboard }) {
       </header>
 
       <div className="game-grid">
-        {GAMES.map((game) => (
+        {GAMES.map((game, i) => (
           <button
             key={game.id}
             className="game-card"
+            style={{ animationDelay: `${i * 0.05}s` }}
             onClick={() => {
               hapticImpact('light')
               onSelect(game)

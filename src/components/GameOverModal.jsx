@@ -1,3 +1,6 @@
+import { useCountUp } from '../hooks/useCountUp'
+import Confetti from './Confetti'
+
 // Shown by GameShell when a game ends.
 export default function GameOverModal({
   title,
@@ -17,18 +20,20 @@ export default function GameOverModal({
   onLeaderboard,
   onShare,
 }) {
+  const shownScore = useCountUp(score)
   return (
     <div className="modal-backdrop" role="dialog" aria-modal="true">
+      {isRecord ? <Confetti /> : null}
       <div className="modal">
         <h2>{title}</h2>
 
         <div className="modal-score">
-          <div className="score-value">{score}</div>
+          <div className="score-value">{shownScore}</div>
           <div className="score-label">your score</div>
         </div>
 
         {isRecord ? (
-          <div className="record-badge">🎉 New personal best!</div>
+          <div className="record-badge pop">🎉 New personal best!</div>
         ) : (
           <div className="best-line">Best: {best}</div>
         )}

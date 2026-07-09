@@ -3,6 +3,7 @@ import { useApp } from '../context/AppContext'
 import { WHEEL, claimDaily } from '../economy/daily'
 import { adsEnabled, showRewarded } from '../ads/monetag'
 import { hapticNotify, hapticImpact } from '../telegram/initTelegram'
+import Confetti from './Confetti'
 
 const SEG = 360 / WHEEL.length
 const COLORS = ['#5eb5f7', '#3aa76d', '#edc850', '#ec6b56', '#9b7ede', '#f2994a']
@@ -68,6 +69,7 @@ export default function DailyModal({ streak, onClaimed, onClose }) {
 
   return (
     <div className="modal-backdrop" onClick={result ? onClose : undefined}>
+      {result?.reward != null ? <Confetti /> : null}
       <div className="modal daily-modal" onClick={(e) => e.stopPropagation()}>
         <h2>🎁 Daily Spin</h2>
         <div className="daily-streak">🔥 {shownStreak}-day streak</div>
