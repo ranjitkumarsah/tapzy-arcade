@@ -11,6 +11,24 @@ payments, ads, referrals, daily rewards, and leaderboards — all running on a
 
 ---
 
+## 📸 Screenshots
+
+> Replace these with real captures from your phone (drop PNGs into
+> [`docs/screenshots/`](screenshots/) — see the [capture guide](screenshots/README.md)).
+
+| Launcher | Gameplay | Daily Spin |
+|---|---|---|
+| ![Launcher](screenshots/launcher.png) | ![Gameplay](screenshots/game.png) | ![Daily Spin](screenshots/daily.png) |
+
+| Wallet & Earn | Store (Stars) | Leaderboard |
+|---|---|---|
+| ![Wallet](screenshots/wallet.png) | ![Store](screenshots/store.png) | ![Leaderboard](screenshots/leaderboard.png) |
+
+*(A 15–30s screen-recording GIF of the launcher → a game → a win with confetti sells
+best — add it as `screenshots/demo.gif`.)*
+
+---
+
 ## 💡 Why this is valuable
 
 - **Ready to earn** — three monetization streams wired in: **ads** (Monetag),
@@ -107,6 +125,42 @@ servers, no paid dependencies.
   responsibilities of the operator.
 - **Third-party accounts** (Telegram, Firebase, Vercel, Monetag) are the buyer's own,
   under those providers' terms.
+
+---
+
+## 📜 License & sale terms (template — customize before selling)
+
+> This is a starting template, **not legal advice**. Adjust to your deal and, for
+> higher-value sales, have a lawyer review. Pick the model that matches what you're
+> offering.
+
+**What the buyer gets**
+- The **full source code** and documentation in this repository, as-is at the time of sale.
+- The right to **deploy their own instance** under **their own** Telegram bot, Firebase,
+  Vercel, and ad-network accounts, and to **modify and rebrand** it freely.
+
+**Choose a sale model** (delete the ones that don't apply):
+- **Non-exclusive license** — you may resell the same code to other buyers. *(Lower price; most common.)*
+- **Exclusive license** — you agree not to resell it to anyone else after this sale. *(Higher price.)*
+- **Full ownership transfer** — buyer receives all rights; seller retains none and stops distributing it. *(Highest price.)*
+
+**Not included / buyer's responsibility**
+- Third-party accounts and any fees (Telegram, Firebase, Vercel, Monetag) — the buyer's own,
+  under those providers' terms.
+- **Compliance & legal**: incentivized-ads policy, real-money withdrawals, payouts, taxes,
+  age/region gating, privacy, and Telegram/ad-network terms are the **operator's**
+  responsibility.
+- The seller's own live bot, users, data, ad-network earnings, or accounts are **not**
+  transferred.
+
+**No warranty / no income guarantee**
+- Software is provided **"as is"**, without warranty of any kind. **Revenue is not
+  guaranteed** and depends on traffic, geography, ad fill/eCPM, and engagement. To the
+  maximum extent permitted by law, the seller is not liable for any damages or losses
+  arising from use of the code.
+
+**Support** *(state clearly)*: e.g. "Includes setup guidance via the go-live checklist;
+[N days] of email support for deployment questions; no ongoing development included."
 
 ---
 
