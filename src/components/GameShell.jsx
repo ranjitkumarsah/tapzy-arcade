@@ -15,6 +15,7 @@ import GameOverModal from './GameOverModal'
 import SoundToggle from './SoundToggle'
 import CoinChip from './CoinChip'
 import WalletModal from './WalletModal'
+import { APP_NAME } from '../appConfig'
 
 // Wraps any game with a consistent interface. The game only needs to call
 // onGameOver(score); GameShell saves the score, shows the modal, handles retry,
@@ -163,7 +164,7 @@ export default function GameShell({ game, onExit, onOpenLeaderboard }) {
           onShare={() =>
             shareApp({
               ref: uid ? uid.replace('tg_', '') : undefined,
-              text: `I scored ${result.score} in ${game.title} on Tapzy Arcade — can you beat me? 🎮`,
+              text: `I scored ${result.score} in ${game.title} on ${APP_NAME} — can you beat me? 🎮`,
             })
           }
         />

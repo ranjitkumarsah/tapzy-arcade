@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import { useApp } from '../context/AppContext'
 import { getShareLink, shareApp, hapticImpact } from '../telegram/initTelegram'
 import { getReferralStats } from '../economy/referral'
+import { APP_NAME } from '../appConfig'
 
 export default function InviteModal({ onClose }) {
   const { uid } = useApp()
@@ -42,7 +43,7 @@ export default function InviteModal({ onClose }) {
           </button>
           <button
             className="btn btn-primary"
-            onClick={() => shareApp({ ref: numeric, text: 'Play free mini games on Tapzy Arcade and grab bonus coins! 🎮🪙' })}
+            onClick={() => shareApp({ ref: numeric, text: `Play free mini games on ${APP_NAME} and grab bonus coins! 🎮🪙` })}
           >
             📣 Share on Telegram
           </button>

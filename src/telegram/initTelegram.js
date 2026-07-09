@@ -1,6 +1,6 @@
-// Bot/app identity (from BotFather registration).
-export const BOT_USERNAME = 'TapzyArcadeBot'
-export const APP_SHORT_NAME = 'arcade'
+// Bot/app identity — configured centrally in src/appConfig.js.
+import { BOT_USERNAME, APP_SHORT_NAME, SHARE_TEXT } from '../appConfig'
+export { BOT_USERNAME, APP_SHORT_NAME }
 
 // Central Telegram WebApp integration.
 //
@@ -137,7 +137,7 @@ export function getShareLink(ref) {
 // Open Telegram's native share sheet with the app link (growth loop).
 export function shareApp({ ref, text } = {}) {
   const link = getShareLink(ref)
-  const message = text || 'Play free mini games on Tapzy Arcade! 🎮'
+  const message = text || SHARE_TEXT
   const shareUrl = `https://t.me/share/url?url=${encodeURIComponent(link)}&text=${encodeURIComponent(message)}`
   hapticImpact('light')
   if (webApp?.openTelegramLink) webApp.openTelegramLink(shareUrl)
