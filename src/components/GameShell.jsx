@@ -9,7 +9,9 @@ import {
 import { saveScore } from '../firebase/scores'
 import { submitLeaderboardScore, getMyRank } from '../firebase/leaderboard'
 import { adsEnabled, showRewarded } from '../ads/monetag'
+import { startMusic, stopMusic, playWin, playLose } from '../sound/sound'
 import GameOverModal from './GameOverModal'
+import SoundToggle from './SoundToggle'
 
 // Wraps any game with a consistent interface. The game only needs to call
 // onGameOver(score); GameShell saves the score, shows the modal, and handles
@@ -55,10 +57,19 @@ export default function GameShell({ game, onExit, onOpenLeaderboard }) {
     showGameOpenAd()
   }, [showGameOpenAd])
 
+  // Background music for this game; restart on retry, stop when leaving.
+  useEffect(() => {
+    startMusic(game.id)
+    return () => stopMusic()
+  }, [game.id, round])
+
   const handleGameOver = useCallback(
     async (rawScore) => {
-      hapticImpact('medium')
+      stopMusic()
       const r = await persist(rawScore)
+      // Celebrate a new personal best with win music; otherwise a lose sting.
+      if (r.isRecord) playWin()
+      else playLose()
       setResult({ ...r, bonusClaimed: false })
     },
     [persist],
@@ -101,7 +112,7 @@ export default function GameShell({ game, onExit, onOpenLeaderboard }) {
         <span className="game-title">
           {game.icon} {game.title}
         </span>
-        <span className="game-header-spacer" />
+        <SoundToggle />
       </header>
 
       <div className="game-area">

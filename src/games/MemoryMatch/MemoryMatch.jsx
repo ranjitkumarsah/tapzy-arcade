@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
+import { playBlip } from '../../sound/sound'
 
 // Level-based Memory Match.
 //   - Pairs and difficulty scale with the level number (not hardcoded).
@@ -58,8 +59,10 @@ export default function MemoryMatch({ onGameOver }) {
             prev.map((c, i) => (i === a || i === b ? { ...c, matched: true } : c)),
           )
           setScore((s) => s + 10)
+          playBlip(true)
         } else {
           setLives((l) => l - 1)
+          playBlip(false)
         }
         setFlipped([])
         setBusy(false)

@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from 'react'
+import { playBlip } from '../../sound/sound'
 
 const GRID = 17 // cells per side
 
@@ -73,6 +74,7 @@ export default function Snake({ onGameOver }) {
       if (head.x === food.x && head.y === food.y) {
         localScore += 1
         setScore(localScore)
+        playBlip(true)
         food = spawnFood()
         step = Math.max(70, 135 - localScore * 3) // speed up gradually
       } else {

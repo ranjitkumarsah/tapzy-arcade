@@ -3,6 +3,7 @@ import { useApp } from '../context/AppContext'
 import { GAMES } from '../games/registry'
 import { getHighScore } from '../firebase/scores'
 import { hapticImpact, shareApp } from '../telegram/initTelegram'
+import SoundToggle from './SoundToggle'
 
 // Home screen: header with the player, then a grid of game cards.
 export default function Launcher({ onSelect, onOpenLeaderboard }) {
@@ -38,6 +39,7 @@ export default function Launcher({ onSelect, onOpenLeaderboard }) {
           <div className="launcher-hi">Hi, {displayName} 👋</div>
           <div className="launcher-sub">Pick a game</div>
         </div>
+        <SoundToggle />
       </header>
 
       <div className="game-grid">

@@ -1,15 +1,23 @@
-import { useCallback, useState } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 import { useApp } from './context/AppContext'
 import Launcher from './components/Launcher'
 import GameShell from './components/GameShell'
 import Leaderboard from './components/Leaderboard'
 import ErrorBoundary from './components/ErrorBoundary'
+import SplashScreen from './components/SplashScreen'
 
 export default function App() {
   const { authStatus } = useApp()
   const [view, setView] = useState('launcher') // 'launcher' | 'game' | 'leaderboard'
   const [activeGame, setActiveGame] = useState(null)
   const [lbGameId, setLbGameId] = useState(null)
+  const [minSplashDone, setMinSplashDone] = useState(false)
+
+  // Keep the splash up for a short minimum so it doesn't flash by.
+  useEffect(() => {
+    const t = setTimeout(() => setMinSplashDone(true), 1600)
+    return () => clearTimeout(t)
+  }, [])
 
   const openGame = useCallback((game) => {
     setActiveGame(game)
@@ -28,13 +36,8 @@ export default function App() {
     setView('leaderboard')
   }, [])
 
-  if (authStatus === 'loading') {
-    return (
-      <main className="app-loading">
-        <div className="app-logo">Tapzy Arcade</div>
-        <div className="loading">Loading…</div>
-      </main>
-    )
+  if (authStatus === 'loading' || !minSplashDone) {
+    return <SplashScreen />
   }
 
   return (

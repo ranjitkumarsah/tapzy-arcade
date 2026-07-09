@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { useSwipe } from '../useSwipe'
 import { empty, equal, spawn, operate, canMove } from './logic'
+import { playBlip } from '../../sound/sound'
 
 export default function Game2048({ onGameOver }) {
   const [board, setBoard] = useState(() => spawn(spawn(empty())))
@@ -18,6 +19,7 @@ export default function Game2048({ onGameOver }) {
         if (gained) {
           scoreRef.current += gained
           setScore(scoreRef.current)
+          playBlip(true)
         }
         if (!canMove(moved)) {
           endedRef.current = true

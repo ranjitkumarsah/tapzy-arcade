@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from 'react'
 import QUESTIONS from './questions.json'
+import { playBlip } from '../../sound/sound'
 
 const ROUND_SIZE = 10
 
@@ -37,6 +38,7 @@ export default function Quiz({ onGameOver }) {
   useEffect(() => {
     if (picked === null) return
     const gained = current.options[picked].correct ? 1 : 0
+    playBlip(gained === 1)
     const t = setTimeout(() => {
       const nextScore = score + gained
       if (index + 1 >= total) {
