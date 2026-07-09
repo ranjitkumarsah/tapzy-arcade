@@ -2,48 +2,75 @@
 // network can be swapped later. Everything no-ops gracefully when the SDK isn't
 // configured (no VITE_MONETAG_ZONE_ID) or fails to load — the app never breaks.
 //
-// Monetag's in-app/rewarded SDK exposes a global function named `show_<zoneId>`
-// once its loader script runs. We call it to display an ad; the returned promise
-// resolves when the ad is watched/closed.
+// Monetag's multi-format SDK exposes a global function `show_<zoneId>` once its
+// loader runs. The one function drives every format:
+//   fn()                              -> rewarded interstitial (resolves on watch)
+//   fn({ type: 'inApp', inAppSettings }) -> automatic in-app interstitials
+//
+// VITE_MONETAG_ZONE_ID       — main zone (rewarded + on-open + in-app fallback)
+// VITE_MONETAG_INAPP_ZONE_ID — optional separate zone for auto in-app ads
 
 const ZONE = import.meta.env.VITE_MONETAG_ZONE_ID
+const INAPP_ZONE = import.meta.env.VITE_MONETAG_INAPP_ZONE_ID || ZONE
+
 export const adsEnabled = Boolean(ZONE)
 
-let loadPromise = null
+const loaders = {}
 
-function loadSdk() {
-  if (!ZONE) return Promise.reject(new Error('no-zone'))
-  if (loadPromise) return loadPromise
-  loadPromise = new Promise((resolve, reject) => {
+function loadSdk(zone) {
+  if (!zone) return Promise.reject(new Error('no-zone'))
+  if (loaders[zone]) return loaders[zone]
+  loaders[zone] = new Promise((resolve, reject) => {
     const s = document.createElement('script')
     s.src = 'https://libtl.com/sdk.js'
-    s.dataset.zone = ZONE
-    s.dataset.sdk = `show_${ZONE}`
+    s.dataset.zone = zone
+    s.dataset.sdk = `show_${zone}`
     s.onload = () => resolve()
     s.onerror = () => reject(new Error('sdk-failed'))
     document.head.appendChild(s)
   })
-  return loadPromise
+  return loaders[zone]
 }
 
-// Preload the SDK asynchronously so it doesn't block first render.
+function showFn(zone) {
+  return typeof window !== 'undefined' ? window[`show_${zone}`] : undefined
+}
+
+// Preload the SDK and start Monetag's automatic in-app interstitials.
 export function initMonetag() {
-  if (ZONE) loadSdk().catch(() => {})
+  if (!ZONE) return
+  loadSdk(ZONE).catch(() => {})
+  startAutoInApp()
 }
 
-function showFn() {
-  return typeof window !== 'undefined' ? window[`show_${ZONE}`] : undefined
+// Monetag manages the timing of these fullscreen ads while the app is open.
+export function startAutoInApp() {
+  if (!INAPP_ZONE) return
+  loadSdk(INAPP_ZONE)
+    .then(() => {
+      const fn = showFn(INAPP_ZONE)
+      if (typeof fn !== 'function') return
+      fn({
+        type: 'inApp',
+        inAppSettings: {
+          frequency: 2, // up to 2 ads...
+          capping: 0.1, // ...per 0.1h (6 min)
+          interval: 60, // at least 60s apart
+          timeout: 8, // wait 8s after load before the first
+          everyPage: false,
+        },
+      })
+    })
+    .catch(() => {})
 }
 
 // Opt-in rewarded ad. Resolves true ONLY when Monetag confirms the ad was
 // watched to completion — the caller must grant the reward only on true.
-// If the ad is unavailable, fails, or the user closes it early, returns false
-// and NO reward is given.
 export async function showRewarded() {
   try {
     if (!ZONE) return false
-    await loadSdk()
-    const fn = showFn()
+    await loadSdk(ZONE)
+    const fn = showFn(ZONE)
     if (typeof fn !== 'function') return false
     await fn() // resolves only when the reward condition is met
     return true
@@ -52,12 +79,12 @@ export async function showRewarded() {
   }
 }
 
-// Frequency-capped interstitial. Returns true if an ad was shown.
+// Frequency-capped interstitial (used on game-open / occasional).
 export async function showInterstitial() {
   try {
     if (!ZONE) return false
-    await loadSdk()
-    const fn = showFn()
+    await loadSdk(ZONE)
+    const fn = showFn(ZONE)
     if (typeof fn !== 'function') return false
     await fn()
     return true
