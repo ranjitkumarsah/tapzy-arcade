@@ -10,7 +10,7 @@ const AUTH_LABEL = {
 }
 
 export default function App() {
-  const { insideTelegram, telegramUser, authStatus, authError, uid } = useApp()
+  const { insideTelegram, telegramUser, authStatus, authError, authErrorDetail, uid } = useApp()
 
   const displayName = telegramUser
     ? [telegramUser.first_name, telegramUser.last_name].filter(Boolean).join(' ')
@@ -48,6 +48,9 @@ export default function App() {
         ) : null}
         {authStatus === 'error' && authError ? (
           <div className="hint">{authError}</div>
+        ) : null}
+        {authStatus === 'error' && authErrorDetail ? (
+          <pre className="debug">{JSON.stringify(authErrorDetail, null, 2)}</pre>
         ) : null}
       </div>
 

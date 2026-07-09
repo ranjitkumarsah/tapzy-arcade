@@ -12,6 +12,7 @@ export function useTelegramAuth({ initData, telegramUser, insideTelegram }) {
   const [status, setStatus] = useState('loading')
   const [firebaseUser, setFirebaseUser] = useState(null)
   const [error, setError] = useState(null)
+  const [errorDetail, setErrorDetail] = useState(null)
 
   useEffect(() => {
     let cancelled = false
@@ -31,7 +32,9 @@ export function useTelegramAuth({ initData, telegramUser, insideTelegram }) {
         })
         if (!res.ok) {
           const body = await res.json().catch(() => ({}))
-          throw new Error(body.reason || body.error || `HTTP ${res.status}`)
+          const err = new Error(body.reason || body.error || `HTTP ${res.status}`)
+          err.detail = body // full diagnostics (codeVersion, diag, ...)
+          throw err
         }
 
         const { token } = await res.json()
@@ -56,6 +59,7 @@ export function useTelegramAuth({ initData, telegramUser, insideTelegram }) {
       } catch (err) {
         if (cancelled) return
         setError(err.message)
+        setErrorDetail(err.detail || null)
         setStatus('error')
       }
     }
@@ -67,5 +71,5 @@ export function useTelegramAuth({ initData, telegramUser, insideTelegram }) {
     // Re-run only if the identity inputs change.
   }, [initData, insideTelegram, telegramUser])
 
-  return { status, firebaseUser, error }
+  return { status, firebaseUser, error, errorDetail }
 }

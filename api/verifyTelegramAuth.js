@@ -12,6 +12,10 @@ import crypto from 'node:crypto'
 import { initializeApp, getApps, cert } from 'firebase-admin/app'
 import { getAuth } from 'firebase-admin/auth'
 
+// Bump this string whenever this file changes so we can confirm from the client
+// which deployed version is actually running.
+const CODE_VERSION = 'v3-diagnostics'
+
 // Reuse the Admin app across warm invocations.
 function getAdminAuth() {
   if (!getApps().length) {
@@ -42,10 +46,20 @@ function verifyInitData(initData, botToken) {
   const secretKey = crypto.createHmac('sha256', 'WebAppData').update(botToken).digest()
   const computedHash = crypto.createHmac('sha256', secretKey).update(dataCheckString).digest('hex')
 
+  // Safe diagnostics — no secrets. Helps pinpoint bad_hash causes remotely.
+  const diag = {
+    fieldKeys: [...params.keys()].sort(),
+    hadSignature: initData.includes('signature='),
+    computedPrefix: computedHash.slice(0, 6),
+    providedPrefix: providedHash.slice(0, 6),
+    botTokenLen: botToken.length,
+    botTokenTail: botToken.slice(-4),
+  }
+
   const a = Buffer.from(computedHash, 'hex')
   const b = Buffer.from(providedHash, 'hex')
   if (a.length !== b.length || !crypto.timingSafeEqual(a, b)) {
-    return { ok: false, reason: 'bad_hash' }
+    return { ok: false, reason: 'bad_hash', diag }
   }
 
   // Replay protection: reject data older than 24h.
@@ -85,7 +99,12 @@ export default async function handler(req, res) {
 
     const result = verifyInitData(initData, botToken)
     if (!result.ok) {
-      return res.status(401).json({ error: 'invalid_init_data', reason: result.reason })
+      return res.status(401).json({
+        error: 'invalid_init_data',
+        reason: result.reason,
+        codeVersion: CODE_VERSION,
+        diag: result.diag || null,
+      })
     }
 
     const uid = `tg_${result.user.id}`

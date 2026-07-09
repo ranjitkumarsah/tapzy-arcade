@@ -22,7 +22,12 @@ export function AppProvider({ children }) {
     initTelegram()
   }, [])
 
-  const { status: authStatus, firebaseUser, error: authError } = useTelegramAuth({
+  const {
+    status: authStatus,
+    firebaseUser,
+    error: authError,
+    errorDetail: authErrorDetail,
+  } = useTelegramAuth({
     initData,
     telegramUser,
     insideTelegram: isInsideTelegram,
@@ -36,10 +41,11 @@ export function AppProvider({ children }) {
       authStatus,
       firebaseUser,
       authError,
+      authErrorDetail,
       // Convenient UID for score/leaderboard writes in later phases.
       uid: firebaseUser?.uid ?? null,
     }),
-    [telegramUser, initData, authStatus, firebaseUser, authError],
+    [telegramUser, initData, authStatus, firebaseUser, authError, authErrorDetail],
   )
 
   return <AppContext.Provider value={value}>{children}</AppContext.Provider>
