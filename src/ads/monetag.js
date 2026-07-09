@@ -36,14 +36,16 @@ function showFn(zone) {
   return typeof window !== 'undefined' ? window[`show_${zone}`] : undefined
 }
 
-// Preload the SDK and start Monetag's automatic in-app interstitials.
+// Preload the SDK. We intentionally do NOT start Monetag's auto in-app
+// interstitials: they fire on Monetag's own timer and interrupt active
+// gameplay. Ads are shown only at natural breaks instead (game open, occasional
+// menu return, and the opt-in rewarded button).
 export function initMonetag() {
   if (!ZONE) return
   loadSdk(ZONE).catch(() => {})
-  startAutoInApp()
 }
 
-// Monetag manages the timing of these fullscreen ads while the app is open.
+// Available if ever needed, but not called — auto in-app ads interrupt play.
 export function startAutoInApp() {
   if (!INAPP_ZONE) return
   loadSdk(INAPP_ZONE)
