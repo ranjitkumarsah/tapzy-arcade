@@ -1,10 +1,4 @@
-:root {
-  /* These fall back nicely and will be overridden by Telegram themeParams in Phase 1. */
-  --bg: #17212b;
-  --text: #ffffff;
-  --accent: #5eb5f7;
-  --card: #22303c;
-}
+/* Theme variables live in theme.css and are overridden by Telegram at runtime. */
 
 * {
   box-sizing: border-box;
@@ -26,7 +20,8 @@ body {
 }
 
 .hello {
-  min-height: 100%;
+  /* Prefer Telegram's stable viewport height when available, else fill the screen. */
+  min-height: var(--tg-viewport-stable-height, 100vh);
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -34,6 +29,29 @@ body {
   gap: 12px;
   text-align: center;
   padding: 24px;
+}
+
+.avatar {
+  width: 72px;
+  height: 72px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 2px solid var(--accent);
+}
+
+.avatar--placeholder {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.8rem;
+  font-weight: 700;
+  color: var(--accent-text);
+  background: var(--accent);
+}
+
+.handle {
+  color: var(--hint);
+  font-size: 0.9rem;
 }
 
 .hello h1 {

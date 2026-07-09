@@ -1,0 +1,32 @@
+/* Theme variables.
+ *
+ * These defaults are used outside Telegram (local dev) and as fallbacks.
+ * Inside Telegram, initTelegram.js overrides the ones Telegram provides
+ * via themeParams, so the app matches the user's light/dark theme.
+ */
+:root {
+  --bg: #17212b;
+  --card: #22303c;
+  --section-bg: #1d2733;
+  --header-bg: #17212b;
+  --text: #ffffff;
+  --hint: #8a9aa8;
+  --link: #5eb5f7;
+  --accent: #5eb5f7;
+  --accent-text: #ffffff;
+  --danger: #ec3942;
+}
+
+/* Optional light-scheme fallback if Telegram reports light but omits colors. */
+:root[data-theme='light'] {
+  --bg: #ffffff;
+  --card: #f1f1f1;
+  --section-bg: #ffffff;
+  --header-bg: #ffffff;
+  --text: #000000;
+  --hint: #707579;
+  --link: #2481cc;
+  --accent: #2481cc;
+  --accent-text: #ffffff;
+  --danger: #df3f40;
+}

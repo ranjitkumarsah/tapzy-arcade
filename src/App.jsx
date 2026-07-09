@@ -1,36 +1,40 @@
-import { useEffect, useState } from 'react'
+import { useApp } from './context/AppContext'
 
-// Phase 0 "Hello World": confirms the app renders and that the Telegram
-// WebApp SDK is present when opened inside Telegram. Real Telegram wiring
-// (ready/expand/theme/user) lands in Phase 1.
+// Phase 1: shows the real Telegram user, adopts Telegram's theme, and confirms
+// the SDK handshake. The launcher + games arrive in Phase 3.
 export default function App() {
-  const [tg, setTg] = useState(null)
+  const { insideTelegram, telegramUser } = useApp()
 
-  useEffect(() => {
-    const webApp = window.Telegram?.WebApp
-    if (webApp) {
-      // Minimal handshake so Telegram stops showing the loading spinner.
-      webApp.ready()
-      setTg(webApp)
-    }
-  }, [])
-
-  const insideTelegram = Boolean(tg)
+  const displayName = telegramUser
+    ? [telegramUser.first_name, telegramUser.last_name].filter(Boolean).join(' ')
+    : '…'
 
   return (
     <main className="hello">
       <h1>Tapzy Arcade</h1>
-      <p className="tagline">Hello World 👋</p>
+
+      {telegramUser?.photo_url ? (
+        <img className="avatar" src={telegramUser.photo_url} alt="" />
+      ) : (
+        <div className="avatar avatar--placeholder" aria-hidden="true">
+          {displayName.charAt(0) || '?'}
+        </div>
+      )}
+
+      <p className="tagline">
+        Welcome, <strong>{displayName}</strong> 👋
+        {telegramUser?.username ? (
+          <span className="handle"> @{telegramUser.username}</span>
+        ) : null}
+      </p>
 
       <div className={`status ${insideTelegram ? 'ok' : 'warn'}`}>
         {insideTelegram
-          ? `✅ Telegram WebApp detected (v${tg.version || '?'})`
-          : '⚠️ Not running inside Telegram (open via your bot to test).'}
+          ? '✅ Running inside Telegram — theme synced, view expanded.'
+          : '⚠️ Not running inside Telegram (showing a mock user for local dev).'}
       </div>
 
-      <p className="hint">
-        Phase 0 skeleton. Next: Phase 1 wires up real Telegram integration.
-      </p>
+      <p className="hint">Phase 1 complete. Next: Phase 2 wires Firebase auth.</p>
     </main>
   )
 }
